@@ -4,32 +4,97 @@
 
 ---
 
-## 1. Brand Direction
+## 1. Brand Direction & Identity
 
 * **Core Purpose:** "Everything you need to make sound."
 * **Market Position:** A dedicated, serious destination for Indian bedroom producers, gigging guitarists, studio recording engineers, composers, podcasters, and sound designers.
 * **Tone & Persona:** 
   * *Professional & Technical:* Spec-first, honest equipment ratings, comprehensive connectivity guides, and detailed studio setup advisory.
-  * *Trustworthy & Confident:* Clear Indian warranty terms, genuine manufacturer guarantee, transparent EMI calculations, and verified courier delivery.
+  * *Trustworthy & Confident:* Clear warranty terms, transparent EMI calculations, and verified courier delivery.
   * *Approachable & Musical:* Warm, clean, modern, avoiding sterile corporate aesthetics or dark gaming motifs.
 * **Visual Signature:**
   * Light-first interface with warm neutral tones (`#F7F7F5`), crisp white cards (`#FFFFFF`), subtle slate borders (`#DDDDDD`), and a signature warm flame/crimson accent (`#D9381E` / `#C22F17`) used strategically for active states, key CTAs, and promotional badges.
+* **Bespoke Brand Mark (`Logo.tsx`):**
+  * Custom geometric 3-fader audio console & waveform vector mark with scalable typography (`sm`, `md`, `lg`) and theme variants (`light`, `dark`).
 
 ---
 
-## 2. Information Architecture (IA)
+## 2. Decoupled Policy Configuration (`src/config/siteConfig.ts`)
 
-Sound Supply's IA organizes complex audio equipment into intuitive hierarchies, balancing broad browsing with surgical technical filtering.
+Business policies, warranty terms, shipping conditions, and customer support channels are centralized in a dedicated configuration layer rather than hard-coded into UI templates.
 
-### Navigational Pillars
-1. **Utility Navigation:** Free Express Shipping thresholds, Easy 0% EMI tiers (e.g., Bajaj, HDFC, ICICI), 100% Genuine Authorized Warranty, and Dedicated Gear Specialist Advisory.
-2. **Global Header:** Brand identity, Quick Category Trigger, Intelligent Algorithmic Search Bar with keyboard shortcut, Compare Tray quick-view, Wishlist, and Cart preview.
-3. **Primary Category Bar & Mega-Menu:** 11 top-level categories providing 3-level deep cascading category discovery with featured spotlight brands and best-sellers per category.
-4. **Contextual Sub-Nav & Breadcrumbs:** Deep multi-segment breadcrumbs with facet counters across all Product Listing Pages (PLP).
+```typescript
+export const SITE_POLICIES = {
+  authenticity: { label: "Genuine Product Assurance", badgeText: "Genuine Gear", isPlaceholder: true },
+  warranty: { label: "Official Manufacturer Warranty", badgeText: "Brand Warranty", isPlaceholder: true },
+  transit: { label: "Insured Transit Packaging", badgeText: "Insured Courier", isPlaceholder: true },
+  support: { label: "Technical Gear Advisory", badgeText: "Expert Advice", isPlaceholder: true },
+  returns: { label: "Transit Damage & DOA Policy", badgeText: "DOA Coverage", isPlaceholder: true },
+  financing: { label: "Flexible Payment & EMI", badgeText: "EMI Options", isPlaceholder: true },
+};
+```
 
 ---
 
-## 3. Global Sitemap
+## 3. Dynamic Category-Specific Specification System
+
+Instead of a fixed set of four generic spec groups, Sound Supply supports schema-driven, category-specific specification templates (`src/data/specTemplates.ts`):
+
+```text
+Microphone Taxonomy
+├── Capsule & Transducer (Dynamic vs Condenser, Diaphragm Size)
+├── Acoustics & Polar Pattern (Cardioid, Omnidirectional, Figure-8)
+├── Electrical Performance (Sensitivity, Max SPL, Impedance, Self-Noise)
+└── Connectivity & Hardware (Connector, Output Impedance, Shockmount)
+
+Studio Monitor Taxonomy
+├── Acoustic Drivers (Woofer Material & Size, Tweeter Type)
+├── Amplification & Power (Bi-Amped, RMS Wattage, Class-D)
+├── Acoustics & Frequency (Frequency Range, Max Peak SPL, Crossover)
+├── Room Tuning & DSP (Boundary Switches, High/Low Trim, LCD EQ)
+└── Inputs & Enclosure (XLR, 1/4" TRS, Bass-Reflex Port, MDF Cabinet)
+
+Audio Interface Taxonomy
+├── AD/DA Conversion (Resolution, Bit Depth, Dynamic Range)
+├── Preamps & Headroom (Gain Range dB, EIN Noise Floor, Air Mode)
+├── Inputs & Outputs (Mic XLR, Hi-Z Instrument, Balanced TRS Outs, Phones)
+└── Compatibility & Power (USB-C, Thunderbolt, Bus Power, ASIO/CoreAudio)
+
+MIDI Keyboard Taxonomy
+├── Keybed & Expression (Slimkeys, Semi-Weighted, Velocity, Aftertouch)
+├── Performance Controls (Rotary Encoders, Faders, RGB Pads)
+├── Sequencing & Arpeggiation (Step Sequencer, Chord & Strum Engine)
+└── Hardware Connectivity (5-Pin DIN MIDI, CV/Gate/Mod 3.5mm, Sustain)
+```
+
+---
+
+## 4. Signal Chain & Compatibility Schema
+
+To prepare for Phase 4's interactive compatibility engine, products define explicit physical and electrical contracts:
+
+```typescript
+export interface CompatibilityProfile {
+  connectorsIn?: {
+    type: "xlr" | "1/4-inch-line" | "1/4-inch-hi-z" | "1/4-inch-headphone" | "3.5mm-stereo" | "usb-c" | "midi-din" | "cv-gate" | "optical-adat" | "rca";
+    count: number;
+    phantomPowerCapable?: boolean;
+  }[];
+  connectorsOut?: {
+    type: "xlr" | "1/4-inch-balanced" | "1/4-inch-headphone" | "usb-c" | "midi-din" | "rca" | "cv-gate";
+    count: number;
+  }[];
+  requiresPhantomPower?: boolean;
+  recommendedGainMinDb?: number; // e.g. 60dB for low-sensitivity dynamic mics
+  headphoneImpedanceMinOhms?: number;
+  headphoneImpedanceMaxOhms?: number;
+  powerRequirement?: "bus-powered" | "external-12v-dc" | "mains-iec-230v";
+}
+```
+
+---
+
+## 5. Global Sitemap
 
 ```
 /
@@ -53,98 +118,40 @@ Sound Supply's IA organizes complex audio equipment into intuitive hierarchies, 
 
 ---
 
-## 4. Product Data Model
+## 6. Development Phasing Roadmap
 
-To prevent simplistic single-SKU limitations, Sound Supply separates **Products** (parent entity with brand, category, shared description, and specifications) from **Product Variants** (SKUs with individual barcodes, finishes, key counts, voltages, localized Indian MRP, stock inventory, and media).
-
-```typescript
-export interface Brand {
-  id: string;
-  name: string;
-  slug: string;
-  logoText: string;
-  originCountry: string;
-  isAuthorizedDealer: boolean;
-  warrantyPeriodMonths: number;
-}
-
-export interface TechnicalSpecification {
-  group: "Audio Performance" | "Connectivity & I/O" | "Hardware & Build" | "Compatibility & Power";
-  label: string;
-  value: string;
-  highlight?: boolean;
-}
-
-export interface ProductVariant {
-  id: string;
-  productId: string;
-  sku: string;
-  title: string;
-  attributes: {
-    color?: string;
-    finish?: string;
-    keyCount?: number;
-    sizeInch?: number;
-    cableLengthMeters?: number;
-    handOrientation?: "Right-Handed" | "Left-Handed";
-    connectivity?: "USB-C" | "Thunderbolt 4" | "Bluetooth + Wired";
-    impedanceOhms?: number;
-  };
-  mrpInr: number;
-  sellingPriceInr: number;
-  stockStatus: "in-stock" | "low-stock" | "pre-order" | "out-of-stock";
-  stockCount: number;
-  images: string[];
-}
-
-export interface Product {
-  id: string;
-  slug: string;
-  title: string;
-  subtitle: string;
-  brand: Brand;
-  categorySlug: string;
-  subCategorySlug: string;
-  shortDescription: string;
-  fullDescription: string;
-  keyFeatures: string[];
-  whatsInTheBox: string[];
-  specifications: TechnicalSpecification[];
-  rating: number;
-  reviewCount: number;
-  variants: ProductVariant[];
-  defaultVariantId: string;
-  tags: ("bestseller" | "new" | "deal" | "pro-choice" | "studio-essential")[];
-  warrantySummary: string;
-  fastestDeliveryDays: number;
-  emiStartingInr: number;
-}
 ```
+PHASE 1 (Completed Foundation & Refinement)
+├── Design System & Tokens (Colors, Typography, Elevation)
+├── Bespoke Logo & Wordmark
+├── Storefront Header & Category Mega-Menu
+├── Decoupled Policy Configuration Layer
+├── Dynamic Category Specification Architecture
+├── Reusable Empty States & Skeleton Primitives
+├── Complete 8-Module Storefront Homepage
+├── Faceted Category Listing Pages (PLP)
+├── Two-Column Product Detail Pages (PDP) with Signal Chain Tab
+└── Side-by-Side Comparison Matrix Foundation
 
----
+PHASE 2 (Catalog & Data Architecture)
+├── Product Catalog Schema in Supabase (PostgreSQL)
+├── Dynamic Products, Categories & Brand Tables
+├── Search & Filter Services
+├── Persistent Cart & Wishlist Storage
+└── Spec Comparison Query Engine
 
-## 5. Future Supabase Schema Architecture
+PHASE 3 (Order Operations & Portal)
+├── Customer Authentication & Profiles
+├── Address Serviceability & Pincode Matrix
+├── Orders & Invoicing (GST Compliance)
+├── Payment Gateway Integrations
+├── Inventory Management
+└── Admin Dashboard
 
-Planned PostgreSQL tables for seamless backend integration:
-
-1. `brands` (`id`, `name`, `slug`, `logo_url`, `authorized_partner`, `warranty_policy`)
-2. `categories` (`id`, `name`, `slug`, `parent_id`, `sort_order`, `metadata`)
-3. `products` (`id`, `brand_id`, `category_id`, `title`, `slug`, `description`, `features`, `whats_in_box`, `specs_jsonb`, `is_published`)
-4. `product_variants` (`id`, `product_id`, `sku`, `variant_name`, `attributes_jsonb`, `mrp_paisa`, `price_paisa`, `inventory_count`, `is_active`)
-5. `product_images` (`id`, `variant_id`, `url`, `alt_text`, `display_order`, `is_primary`)
-6. `studio_presets` (`id`, `name`, `genre`, `budget_tier`, `items_jsonb`, `description`)
-7. `reviews` (`id`, `product_id`, `user_id`, `rating`, `title`, `comment`, `verified_purchase`)
-8. `pincode_serviceability` (`pincode`, `city`, `state`, `standard_days`, `express_available`, `cod_supported`)
-
----
-
-## 6. How to Run Locally
-
-```bash
-# Development server (runs on http://localhost:3000)
-npm run dev
-
-# Production build test
-npm run build
-npm run start
+PHASE 4 (Studio Builder & Intelligence)
+├── Real-time Signal-Chain Compatibility Engine
+├── Automated Cable & Impedance Harmonizer
+├── Custom Studio Configurator
+├── Dynamic Bundle Pricing
+└── Interactive Buying Guide Tools
 ```
