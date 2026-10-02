@@ -54,6 +54,16 @@ const config: Config = {
       maxWidth: {
         site: "1400px",
       },
+      borderRadius: {
+        none: "0px",
+        sm: "4px",
+        DEFAULT: "6px",
+        md: "6px",
+        lg: "8px",
+        xl: "10px",
+        "2xl": "12px",
+        full: "9999px",
+      },
     },
   },
   plugins: [],

@@ -1,18 +1,18 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useCommerce } from "@/context/CommerceContext";
 import { PRODUCTS } from "@/data/products";
 import { Container } from "@/components/ui/Container";
 import { Breadcrumbs } from "@/components/navigation/Breadcrumbs";
 import { RatingStars } from "@/components/ui/RatingStars";
-import { formatInr } from "@/lib/utils";
-import { Scale, X, ShoppingBag, Plus, ArrowLeft } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { formatInr, cn } from "@/lib/utils";
+import { Scale, X, ShoppingBag, Plus, Sparkles, Filter } from "lucide-react";
 
 export default function ComparePage() {
   const { compareIds, removeFromCompare, clearCompare, addToCompare, addToCart } = useCommerce();
+  const [onlyDifferences, setOnlyDifferences] = useState(false);
 
   // If no items in compare, offer default popular comparison: Yamaha HS5 & KRK ROKIT 5
   const activeIds =
@@ -29,40 +29,53 @@ export default function ComparePage() {
     new Set(products.flatMap((p) => p.specifications.map((s) => s.label)))
   );
 
+  // Determine if a given specification has different values across products
+  const isSpecDifferent = (label: string) => {
+    const values = products.map((p) => {
+      const spec = p.specifications.find((s) => s.label === label);
+      return spec ? spec.value : "—";
+    });
+    return new Set(values).size > 1;
+  };
+
+  const displayedLabels = onlyDifferences
+    ? allSpecLabels.filter((label) => isSpecDifferent(label))
+    : allSpecLabels;
+
   return (
     <div className="py-8 bg-canvas min-h-screen">
       <Container size="wide">
         <Breadcrumbs items={[{ label: "Technical Comparison" }]} className="mb-4" />
 
         {/* Page Header */}
-        <div className="bg-white border border-border rounded-lg p-6 sm:p-8 mb-8 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="bg-white border border-border rounded-xl p-6 sm:p-8 mb-6 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-accent font-mono mb-1">
               <Scale size={14} />
-              <span>Side-by-Side Diagnostic Evaluation</span>
+              <span>Side-by-Side Equipment Comparison</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-text-primary tracking-tight">
               Product Specification Matrix
             </h1>
             <p className="text-xs sm:text-sm text-text-secondary mt-1">
-              Compare audio frequency response, driver components, I/O connectors, and current pricing.
+              Objective technical parameters, transducer components, and pricing to help you select the exact hardware for your workflow.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             {compareIds.length > 0 && (
               <button
                 type="button"
                 onClick={clearCompare}
                 className="text-xs font-semibold text-text-muted hover:text-accent underline"
               >
-                Clear comparison list
+                Clear list
               </button>
             )}
 
             <Link
               href="/categories/studio-recording"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#171717] hover:bg-black px-4 py-2 rounded-md transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#171717] hover:bg-black px-4 py-2 rounded-md transition-colors shadow-subtle"
             >
               <Plus size={14} />
               <span>Add More Gear</span>
@@ -70,22 +83,46 @@ export default function ComparePage() {
           </div>
         </div>
 
+        {/* Demo banner if fallback sample items are active */}
         {compareIds.length === 0 && (
-          <div className="mb-6 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 flex items-center justify-between">
+          <div className="mb-6 p-3.5 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 flex items-center justify-between shadow-subtle">
             <span>
-              <strong>Sample Benchmark Active:</strong> Currently demonstrating comparison between Yamaha HS5 and KRK ROKIT 5 G4 monitors.
+              <strong>Sample Benchmark Active:</strong> Currently demonstrating comparison between Yamaha HS5 and KRK ROKIT 5 G4 studio monitors.
             </span>
             <button
               onClick={() => {
                 addToCompare("prod-scarlett-2i2-gen4");
                 addToCompare("prod-universal-audio-apollo-twin-x");
               }}
-              className="font-bold underline ml-2"
+              className="font-bold underline ml-2 hover:text-amber-950"
             >
               Switch to Audio Interfaces
             </button>
           </div>
         )}
+
+        {/* Table Controls Bar */}
+        <div className="flex items-center justify-between mb-3 px-1 text-xs">
+          <div className="text-text-muted font-mono">
+            Showing <strong className="text-text-primary">{displayedLabels.length}</strong> parameters across{" "}
+            <strong className="text-text-primary">{products.length}</strong> models
+          </div>
+
+          {/* Toggle Differences Only */}
+          <button
+            type="button"
+            onClick={() => setOnlyDifferences(!onlyDifferences)}
+            className={cn(
+              "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold text-xs border transition-colors",
+              onlyDifferences
+                ? "bg-accent text-white border-accent shadow-subtle"
+                : "bg-white text-text-secondary border-border hover:text-text-primary hover:bg-canvas"
+            )}
+          >
+            <Filter size={12} />
+            <span>{onlyDifferences ? "Showing Differences Only" : "Highlight Differences"}</span>
+          </button>
+        </div>
 
         {/* Comparison Matrix Table */}
         <div className="bg-white border border-border rounded-xl shadow-subtle overflow-hidden">
@@ -94,7 +131,7 @@ export default function ComparePage() {
               {/* Product Headers Row */}
               <thead>
                 <tr className="border-b border-border bg-canvas/30">
-                  <th className="p-4 w-1/4 text-xs font-bold uppercase tracking-wider text-text-muted align-top border-r border-border-subtle">
+                  <th className="p-4 w-1/4 text-xs font-bold uppercase tracking-wider text-text-muted align-top border-r border-border-subtle font-mono">
                     Hardware Overview
                   </th>
                   {products.map((p) => {
@@ -125,7 +162,7 @@ export default function ComparePage() {
                           </div>
 
                           <div className="text-center space-y-1">
-                            <div className="text-[11px] font-bold text-accent uppercase tracking-wider">
+                            <div className="text-[11px] font-bold text-accent uppercase tracking-wider font-mono">
                               {p.brand.name}
                             </div>
                             <Link
@@ -137,7 +174,7 @@ export default function ComparePage() {
                           </div>
 
                           <div className="text-center pt-2 border-t border-border-subtle">
-                            <div className="text-base font-bold font-mono text-text-primary">
+                            <div className="text-base font-bold font-mono text-text-primary tabular-nums">
                               {formatInr(variant.sellingPriceInr)}
                             </div>
                             {variant.mrpInr > variant.sellingPriceInr && (
@@ -150,7 +187,7 @@ export default function ComparePage() {
                           <button
                             type="button"
                             onClick={() => addToCart(p.id, variant.id, 1)}
-                            className="w-full py-2 bg-accent hover:bg-accent-hover text-white text-xs font-bold rounded flex items-center justify-center gap-1.5 transition-colors"
+                            className="w-full py-2 bg-[#171717] hover:bg-accent text-white text-xs font-bold rounded flex items-center justify-center gap-1.5 transition-colors shadow-subtle"
                           >
                             <ShoppingBag size={13} />
                             <span>Add to Cart</span>
@@ -165,8 +202,8 @@ export default function ComparePage() {
               {/* General Commerce Metrics */}
               <tbody>
                 <tr className="border-b border-border-subtle bg-canvas-muted">
-                  <td colSpan={products.length + 1} className="py-2 px-4 text-[11px] font-bold uppercase tracking-wider text-text-primary">
-                    Ratings & Warranty
+                  <td colSpan={products.length + 1} className="py-2 px-4 text-[10px] font-bold uppercase tracking-wider text-text-primary font-mono">
+                    Ratings & Official Warranty
                   </td>
                 </tr>
 
@@ -205,35 +242,45 @@ export default function ComparePage() {
 
                 {/* Technical Specifications Section */}
                 <tr className="border-b border-border-subtle bg-canvas-muted">
-                  <td colSpan={products.length + 1} className="py-2 px-4 text-[11px] font-bold uppercase tracking-wider text-text-primary">
-                    Technical Specifications
+                  <td colSpan={products.length + 1} className="py-2 px-4 text-[10px] font-bold uppercase tracking-wider text-text-primary font-mono">
+                    Calibrated Technical Specifications
                   </td>
                 </tr>
 
-                {allSpecLabels.map((label, idx) => (
-                  <tr
-                    key={label}
-                    className={cn(
-                      "border-b border-border-subtle last:border-b-0",
-                      idx % 2 === 0 ? "bg-white" : "bg-canvas/30"
-                    )}
-                  >
-                    <td className="py-2.5 px-4 text-xs font-medium text-text-secondary border-r border-border-subtle">
-                      {label}
-                    </td>
-                    {products.map((p) => {
-                      const spec = p.specifications.find((s) => s.label === label);
-                      return (
-                        <td
-                          key={p.id}
-                          className="py-2.5 px-4 text-xs font-mono text-text-primary border-r border-border-subtle last:border-r-0"
-                        >
-                          {spec ? spec.value : "—"}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
+                {displayedLabels.map((label, idx) => {
+                  const differs = isSpecDifferent(label);
+                  return (
+                    <tr
+                      key={label}
+                      className={cn(
+                        "border-b border-border-subtle last:border-b-0 transition-colors",
+                        differs ? "bg-amber-50/20" : idx % 2 === 0 ? "bg-white" : "bg-canvas/30"
+                      )}
+                    >
+                      <td className="py-2.5 px-4 text-xs font-medium text-text-secondary border-r border-border-subtle">
+                        <div className="flex items-center justify-between gap-1">
+                          <span>{label}</span>
+                          {differs && (
+                            <span className="text-[9px] font-bold font-mono text-accent bg-accent-subtle px-1.5 py-0.2 rounded">
+                              Diff
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      {products.map((p) => {
+                        const spec = p.specifications.find((s) => s.label === label);
+                        return (
+                          <td
+                            key={p.id}
+                            className="py-2.5 px-4 text-xs font-mono text-text-primary border-r border-border-subtle last:border-r-0"
+                          >
+                            {spec ? spec.value : "—"}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

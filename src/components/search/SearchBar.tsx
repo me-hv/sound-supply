@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useId } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, X, ArrowRight, CornerDownLeft, Clock, Sparkles } from "lucide-react";
+import { Search, X, ArrowRight, CornerDownLeft, Sparkles, Tag, Layers } from "lucide-react";
 import { PRODUCTS } from "@/data/products";
 import { CATEGORIES } from "@/data/categories";
 import { BRANDS } from "@/data/brands";
@@ -64,8 +64,35 @@ export function SearchBar() {
     ? BRANDS.filter((b) => b.name.toLowerCase().includes(normalized)).slice(0, 3)
     : [];
 
+  // Total navigable items count
+  const totalNavItems = matchingProducts.length + matchingCategories.length + matchingBrands.length;
+
   const handleSearchSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    if (activeIndex >= 0) {
+      // Execute the active item
+      if (activeIndex < matchingProducts.length) {
+        const item = matchingProducts[activeIndex];
+        setIsOpen(false);
+        router.push(`/products/${item.slug}`);
+        return;
+      }
+      const catIndex = activeIndex - matchingProducts.length;
+      if (catIndex < matchingCategories.length) {
+        const item = matchingCategories[catIndex];
+        setIsOpen(false);
+        router.push(`/categories/${item.slug}`);
+        return;
+      }
+      const brandIndex = catIndex - matchingCategories.length;
+      if (brandIndex < matchingBrands.length) {
+        const item = matchingBrands[brandIndex];
+        setIsOpen(false);
+        router.push(`/brands/${item.slug}`);
+        return;
+      }
+    }
+
     if (query.trim()) {
       setIsOpen(false);
       router.push(`/search?q=${encodeURIComponent(query.trim())}`);
@@ -82,7 +109,20 @@ export function SearchBar() {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Escape") {
       setIsOpen(false);
+      setActiveIndex(-1);
       inputRef.current?.blur();
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (!isOpen) {
+        setIsOpen(true);
+      } else if (totalNavItems > 0) {
+        setActiveIndex((prev) => (prev + 1) % totalNavItems);
+      }
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (totalNavItems > 0) {
+        setActiveIndex((prev) => (prev <= 0 ? totalNavItems - 1 : prev - 1));
+      }
     } else if (e.key === "Enter" && !e.shiftKey) {
       handleSearchSubmit();
     }
@@ -114,8 +154,8 @@ export function SearchBar() {
           }}
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder="Search guitars, microphones, interfaces, synths..."
-          className="w-full pl-10 pr-24 py-2.5 text-sm bg-[#FAFAF9] hover:bg-white focus:bg-white text-text-primary placeholder:text-text-muted border border-border rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+          placeholder="Search gear, interfaces, mics, monitors, synths..."
+          className="w-full pl-10 pr-24 py-2.5 text-sm bg-[#FAFAF9] hover:bg-white focus:bg-white text-text-primary placeholder:text-text-muted border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all font-sans"
         />
 
         {query && (
@@ -125,7 +165,7 @@ export function SearchBar() {
               setQuery("");
               inputRef.current?.focus();
             }}
-            className="absolute right-12 p-1 text-text-muted hover:text-text-primary rounded"
+            className="absolute right-12 p-1 text-text-muted hover:text-text-primary rounded focus-visible:ring-1 focus-visible:ring-accent"
             aria-label="Clear search input"
           >
             <X size={15} />
@@ -134,7 +174,7 @@ export function SearchBar() {
 
         <button
           type="submit"
-          className="absolute right-1.5 px-3 py-1.5 text-xs font-semibold bg-accent text-white rounded-md hover:bg-accent-hover transition-colors flex items-center gap-1 active:scale-[0.98]"
+          className="absolute right-1.5 px-3 py-1.5 text-xs font-semibold bg-[#171717] hover:bg-accent text-white rounded-md transition-colors flex items-center gap-1 active:scale-[0.98] focus-visible:ring-1 focus-visible:ring-accent"
         >
           <span className="hidden sm:inline">Search</span>
           <CornerDownLeft size={12} className="opacity-80" />
@@ -151,7 +191,7 @@ export function SearchBar() {
           {/* State A: Empty input shows popular queries */}
           {!normalized && (
             <div className="p-3.5 space-y-2">
-              <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-text-muted">
+              <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-text-muted font-mono">
                 <Sparkles size={12} className="text-accent" />
                 <span>Popular Gear Searches</span>
               </div>
@@ -187,42 +227,47 @@ export function SearchBar() {
                   {/* Products Matches */}
                   {matchingProducts.length > 0 && (
                     <div className="p-2">
-                      <div className="px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-text-muted">
-                        Matching Equipment
+                      <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-text-muted font-mono flex items-center gap-1">
+                        <Layers size={11} className="text-accent" />
+                        <span>Matching Equipment</span>
                       </div>
-                      {matchingProducts.map((p) => {
+                      {matchingProducts.map((p, idx) => {
                         const variant = p.variants[0];
+                        const isNavActive = activeIndex === idx;
                         return (
                           <Link
                             key={p.id}
                             href={`/products/${p.slug}`}
                             onClick={() => setIsOpen(false)}
-                            className="flex items-center gap-3 p-2 rounded-md hover:bg-canvas transition-colors group"
+                            className={cn(
+                              "flex items-center gap-3 p-2 rounded-md transition-colors group",
+                              isNavActive ? "bg-accent-subtle ring-1 ring-accent" : "hover:bg-canvas"
+                            )}
                           >
-                            <div className="w-11 h-11 bg-canvas-muted rounded flex items-center justify-center p-1 flex-shrink-0 border border-border-subtle overflow-hidden">
+                            <div className="w-10 h-10 bg-canvas-muted rounded flex items-center justify-center p-1 flex-shrink-0 border border-border-subtle overflow-hidden">
                               <img
                                 src={variant.images[0]}
                                 alt={p.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform"
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="text-[11px] font-semibold text-accent uppercase tracking-tight">
+                              <div className="text-[10px] font-semibold text-accent uppercase tracking-tight font-mono">
                                 {p.brand.name}
                               </div>
-                              <div className="text-sm font-medium text-text-primary truncate">
+                              <div className="text-xs font-semibold text-text-primary truncate">
                                 {p.title}
                               </div>
-                              <div className="text-xs text-text-muted truncate">
+                              <div className="text-[11px] text-text-secondary truncate">
                                 {p.subtitle}
                               </div>
                             </div>
                             <div className="text-right flex-shrink-0 pl-2">
-                              <div className="text-sm font-bold text-text-primary font-mono">
+                              <div className="text-xs font-bold text-text-primary font-mono tabular-nums">
                                 {formatInr(variant.sellingPriceInr)}
                               </div>
                               {variant.mrpInr > variant.sellingPriceInr && (
-                                <div className="text-[11px] text-text-muted line-through font-mono">
+                                <div className="text-[10px] text-text-muted line-through font-mono">
                                   {formatInr(variant.mrpInr)}
                                 </div>
                               )}
@@ -238,41 +283,61 @@ export function SearchBar() {
                     <div className="p-2.5 bg-canvas-muted border-t border-border-subtle">
                       {matchingCategories.length > 0 && (
                         <div className="mb-2">
-                          <div className="px-1 py-1 text-[10px] font-bold uppercase tracking-wider text-text-muted">
-                            Matching Categories
+                          <div className="px-1 py-1 text-[10px] font-bold uppercase tracking-wider text-text-muted font-mono flex items-center gap-1">
+                            <Tag size={11} className="text-accent" />
+                            <span>Categories</span>
                           </div>
-                          <div className="flex flex-wrap gap-1.5">
-                            {matchingCategories.map((c) => (
-                              <Link
-                                key={c.id}
-                                href={`/categories/${c.slug}`}
-                                onClick={() => setIsOpen(false)}
-                                className="inline-flex items-center gap-1.5 text-xs bg-white border border-border px-2.5 py-1 rounded-md text-text-primary hover:border-accent hover:text-accent transition-colors"
-                              >
-                                <span>{c.name}</span>
-                                <ArrowRight size={11} />
-                              </Link>
-                            ))}
+                          <div className="flex flex-wrap gap-1.5 mt-1">
+                            {matchingCategories.map((c, catIdx) => {
+                              const overallIndex = matchingProducts.length + catIdx;
+                              const isNavActive = activeIndex === overallIndex;
+                              return (
+                                <Link
+                                  key={c.id}
+                                  href={`/categories/${c.slug}`}
+                                  onClick={() => setIsOpen(false)}
+                                  className={cn(
+                                    "inline-flex items-center gap-1.5 text-xs bg-white border px-2.5 py-1 rounded-md text-text-primary transition-colors",
+                                    isNavActive
+                                      ? "border-accent ring-1 ring-accent text-accent font-semibold"
+                                      : "border-border hover:border-accent hover:text-accent"
+                                  )}
+                                >
+                                  <span>{c.name}</span>
+                                  <ArrowRight size={11} />
+                                </Link>
+                              );
+                            })}
                           </div>
                         </div>
                       )}
 
                       {matchingBrands.length > 0 && (
                         <div>
-                          <div className="px-1 py-1 text-[10px] font-bold uppercase tracking-wider text-text-muted">
-                            Matching Brands
+                          <div className="px-1 py-1 text-[10px] font-bold uppercase tracking-wider text-text-muted font-mono">
+                            Brands
                           </div>
-                          <div className="flex flex-wrap gap-1.5">
-                            {matchingBrands.map((b) => (
-                              <Link
-                                key={b.id}
-                                href={`/brands/${b.slug}`}
-                                onClick={() => setIsOpen(false)}
-                                className="inline-flex items-center text-xs bg-white border border-border px-2.5 py-1 rounded-md font-semibold text-text-primary hover:border-accent hover:text-accent transition-colors"
-                              >
-                                {b.name}
-                              </Link>
-                            ))}
+                          <div className="flex flex-wrap gap-1.5 mt-1">
+                            {matchingBrands.map((b, bIdx) => {
+                              const overallIndex =
+                                matchingProducts.length + matchingCategories.length + bIdx;
+                              const isNavActive = activeIndex === overallIndex;
+                              return (
+                                <Link
+                                  key={b.id}
+                                  href={`/brands/${b.slug}`}
+                                  onClick={() => setIsOpen(false)}
+                                  className={cn(
+                                    "inline-flex items-center text-xs bg-white border px-2.5 py-1 rounded-md font-semibold text-text-primary transition-colors",
+                                    isNavActive
+                                      ? "border-accent ring-1 ring-accent text-accent"
+                                      : "border-border hover:border-accent hover:text-accent"
+                                  )}
+                                >
+                                  {b.name}
+                                </Link>
+                              );
+                            })}
                           </div>
                         </div>
                       )}

@@ -44,7 +44,7 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col bg-canvas text-text-primary antialiased selection:bg-accent selection:text-white">
         <CommerceProvider>
           <SiteHeader />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 pb-14 lg:pb-0">{children}</main>
           <CompareDrawer />
           <SiteFooter />
         </CommerceProvider>

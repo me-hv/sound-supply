@@ -26,7 +26,7 @@ export default function BrandDetailPage({ params }: BrandPageProps) {
       <Container size="wide">
         <Breadcrumbs
           items={[
-            { label: "Authorized Brands", href: "/brands" },
+            { label: "Brand Catalogs", href: "/brands" },
             { label: brand.name },
           ]}
           className="mb-4"
@@ -35,13 +35,13 @@ export default function BrandDetailPage({ params }: BrandPageProps) {
         <div className="bg-white border border-border rounded-xl p-6 sm:p-8 mb-8 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <span className="text-xs font-bold uppercase tracking-wider text-accent font-mono">
-              Official Authorized Indian Dealer
+              Hardware Manufacturer Catalog
             </span>
             <h1 className="text-2xl sm:text-4xl font-extrabold text-text-primary tracking-tight">
               {brand.name} Pro Audio
             </h1>
             <p className="text-xs sm:text-sm text-text-secondary max-w-xl">
-              Origin: {brand.originCountry} &bull; All equipment imported through authorized channels with full {brand.warrantyPeriodMonths}-month Indian manufacturer replacement warranty.
+              Origin: {brand.originCountry} &bull; Sourced through official distribution channels with {brand.warrantyPeriodMonths}-month Indian warranty coverage.
             </p>
           </div>
 
@@ -51,7 +51,7 @@ export default function BrandDetailPage({ params }: BrandPageProps) {
             </span>
             <div className="mt-2 text-xs text-emerald-700 font-semibold flex items-center justify-center gap-1">
               <ShieldCheck size={14} />
-              <span>Certified Dealer</span>
+              <span>{brand.warrantyPeriodMonths}M Warranty</span>
             </div>
           </div>
         </div>

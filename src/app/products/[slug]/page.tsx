@@ -33,6 +33,15 @@ import {
   Info,
   Cable,
   Plug,
+  AlertTriangle,
+  Volume2,
+  Mic,
+  Sliders,
+  Headphones,
+  ArrowRight,
+  ArrowDown,
+  Layers,
+  Cpu,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -221,9 +230,9 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
               <div className="flex items-center justify-between text-xs text-text-muted">
                 <Link
                   href={`/brands/${product.brand.slug}`}
-                  className="font-bold text-accent uppercase tracking-wider hover:underline"
+                  className="font-bold text-accent uppercase tracking-wider hover:underline font-mono"
                 >
-                  {product.brand.name} Authorized
+                  {product.brand.name} Hardware
                 </Link>
                 <span className="font-mono">SKU: {activeVariant.sku}</span>
               </div>
@@ -248,7 +257,7 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
                 <span className="text-text-muted">&bull;</span>
                 <span className="text-xs text-emerald-700 font-semibold flex items-center gap-1">
                   <CheckCircle2 size={13} />
-                  <span>100% Genuine Serial Guaranteed</span>
+                  <span>{SITE_POLICIES.authenticity.badgeText} &bull; Valid Serial</span>
                 </span>
               </div>
 
@@ -525,98 +534,311 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
             )}
 
             {/* 1B. Signal Chain & Compatibility Pane */}
-            {activeTab === "compatibility" && product.compatibility && (
-              <div className="space-y-6 max-w-3xl">
-                <div>
-                  <h3 className="text-lg font-bold text-text-primary mb-1">
-                    Signal Chain & Hardware Compatibility
-                  </h3>
-                  <p className="text-xs text-text-secondary">
-                    Input/output routing parameters, electrical levels, and required cables for this unit.
-                  </p>
+            {activeTab === "compatibility" && product.compatibility && (() => {
+              const getChainData = () => {
+                if (product.categorySlug === "microphones") {
+                  return {
+                    stage1: { role: "Source Transducer", name: product.title, isCurrent: true, icon: Mic },
+                    cable1: "Balanced 3-Pin XLR Cable",
+                    stage2: { role: "Audio Interface / Preamp", name: "High-Gain Mic Preamp", isCurrent: false, icon: Sliders },
+                    cable2: "Balanced 1/4\" TRS Line Out",
+                    stage3: { role: "Monitoring Output", name: "Studio Monitors & Headphones", isCurrent: false, icon: Volume2 },
+                  };
+                } else if (product.subCategorySlug === "audio-interfaces") {
+                  return {
+                    stage1: { role: "Audio Input Source", name: "Mics, Instruments, Line Gear", isCurrent: false, icon: Mic },
+                    cable1: "XLR (+48V) / 1/4\" TRS",
+                    stage2: { role: "Central Hub / Interface", name: product.title, isCurrent: true, icon: Sliders },
+                    cable2: "Balanced Line Out & USB-C",
+                    stage3: { role: "DAW & Acoustic System", name: "Computer DAW & Active Monitors", isCurrent: false, icon: Volume2 },
+                  };
+                } else if (product.subCategorySlug === "studio-monitors") {
+                  return {
+                    stage1: { role: "Playback / DAC Source", name: "Audio Interface Line Outs", isCurrent: false, icon: Sliders },
+                    cable1: "Balanced XLR / 1/4\" TRS Cable",
+                    stage2: { role: "Active Acoustic Transducer", name: product.title, isCurrent: true, icon: Volume2 },
+                    cable2: "Direct Acoustic Soundfield",
+                    stage3: { role: "Monitoring Position", name: "Control Room Sweet Spot", isCurrent: false, icon: Headphones },
+                  };
+                } else if (product.subCategorySlug === "studio-headphones") {
+                  return {
+                    stage1: { role: "Interface / DAC Output", name: "Headphone Preamp Stage", isCurrent: false, icon: Sliders },
+                    cable1: "3.5mm TRS / 6.35mm Adapter",
+                    stage2: { role: "Acoustic Enclosure", name: product.title, isCurrent: true, icon: Headphones },
+                    cable2: "Direct Binaural Seal",
+                    stage3: { role: "Critical Listening", name: "Tracking / Stereo Placement", isCurrent: false, icon: Volume2 },
+                  };
+                } else {
+                  return {
+                    stage1: { role: "Input Controller", name: product.title, isCurrent: true, icon: Cpu },
+                    cable1: "USB-C MIDI / DIN Cable",
+                    stage2: { role: "Host Processing / DAW", name: "Computer DAW & Hardware Synths", isCurrent: false, icon: Sliders },
+                    cable2: "Interface Analog Line Out",
+                    stage3: { role: "Acoustic Output", name: "Studio Monitors & Cans", isCurrent: false, icon: Volume2 },
+                  };
+                }
+              };
+
+              const chain = getChainData();
+
+              return (
+                <div className="space-y-8 max-w-4xl">
+                  <div>
+                    <h3 className="text-lg font-bold text-text-primary mb-1">
+                      Signal Chain & Hardware Compatibility
+                    </h3>
+                    <p className="text-xs text-text-secondary">
+                      Visual signal routing path showing hardware relationships, interconnect cables, and electrical compatibility parameters.
+                    </p>
+                  </div>
+
+                  {/* Visual Signal Flow Diagram */}
+                  <div className="bg-canvas border border-border rounded-xl p-5 sm:p-6 shadow-subtle">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-text-muted font-mono mb-4 flex items-center justify-between">
+                      <span>Signal Routing Flow</span>
+                      <span className="text-accent">Analog &bull; Digital Interconnect</span>
+                    </div>
+
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+                      {/* Node 1 */}
+                      <div
+                        className={cn(
+                          "w-full md:w-1/3 p-4 rounded-lg border text-center transition-all flex flex-col items-center justify-between min-h-[120px]",
+                          chain.stage1.isCurrent
+                            ? "bg-white border-accent ring-2 ring-accent/20 shadow-sm"
+                            : "bg-white border-border text-text-secondary"
+                        )}
+                      >
+                        <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-text-muted">
+                          <chain.stage1.icon size={13} className={chain.stage1.isCurrent ? "text-accent" : "text-text-muted"} />
+                          <span>{chain.stage1.role}</span>
+                        </div>
+                        <div className="my-2 text-xs font-bold text-text-primary leading-snug line-clamp-2">
+                          {chain.stage1.name}
+                        </div>
+                        {chain.stage1.isCurrent && (
+                          <span className="text-[10px] font-bold text-white bg-accent px-2 py-0.5 rounded font-mono">
+                            This Product
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Cable Connector 1 */}
+                      <div className="flex md:flex-col items-center justify-center gap-1 text-center py-1">
+                        <span className="text-[10px] font-mono font-semibold text-text-secondary bg-white px-2 py-1 rounded border border-border-subtle shadow-subtle">
+                          {chain.cable1}
+                        </span>
+                        <ArrowRight size={14} className="hidden md:block text-accent" />
+                        <ArrowDown size={14} className="md:hidden text-accent" />
+                      </div>
+
+                      {/* Node 2 */}
+                      <div
+                        className={cn(
+                          "w-full md:w-1/3 p-4 rounded-lg border text-center transition-all flex flex-col items-center justify-between min-h-[120px]",
+                          chain.stage2.isCurrent
+                            ? "bg-white border-accent ring-2 ring-accent/20 shadow-sm"
+                            : "bg-white border-border text-text-secondary"
+                        )}
+                      >
+                        <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-text-muted">
+                          <chain.stage2.icon size={13} className={chain.stage2.isCurrent ? "text-accent" : "text-text-muted"} />
+                          <span>{chain.stage2.role}</span>
+                        </div>
+                        <div className="my-2 text-xs font-bold text-text-primary leading-snug line-clamp-2">
+                          {chain.stage2.name}
+                        </div>
+                        {chain.stage2.isCurrent && (
+                          <span className="text-[10px] font-bold text-white bg-accent px-2 py-0.5 rounded font-mono">
+                            This Product
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Cable Connector 2 */}
+                      <div className="flex md:flex-col items-center justify-center gap-1 text-center py-1">
+                        <span className="text-[10px] font-mono font-semibold text-text-secondary bg-white px-2 py-1 rounded border border-border-subtle shadow-subtle">
+                          {chain.cable2}
+                        </span>
+                        <ArrowRight size={14} className="hidden md:block text-accent" />
+                        <ArrowDown size={14} className="md:hidden text-accent" />
+                      </div>
+
+                      {/* Node 3 */}
+                      <div
+                        className={cn(
+                          "w-full md:w-1/3 p-4 rounded-lg border text-center transition-all flex flex-col items-center justify-between min-h-[120px]",
+                          chain.stage3.isCurrent
+                            ? "bg-white border-accent ring-2 ring-accent/20 shadow-sm"
+                            : "bg-white border-border text-text-secondary"
+                        )}
+                      >
+                        <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-text-muted">
+                          <chain.stage3.icon size={13} className={chain.stage3.isCurrent ? "text-accent" : "text-text-muted"} />
+                          <span>{chain.stage3.role}</span>
+                        </div>
+                        <div className="my-2 text-xs font-bold text-text-primary leading-snug line-clamp-2">
+                          {chain.stage3.name}
+                        </div>
+                        {chain.stage3.isCurrent && (
+                          <span className="text-[10px] font-bold text-white bg-accent px-2 py-0.5 rounded font-mono">
+                            This Product
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Compatibility Status Badges */}
+                  <div>
+                    <div className="text-xs font-bold uppercase tracking-wider text-text-muted font-mono mb-3">
+                      Verified Compatibility Checkpoints
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                      {/* Phantom Power */}
+                      {product.compatibility.requiresPhantomPower ? (
+                        <div className="p-3 bg-white border border-border rounded-lg flex items-start gap-2 shadow-subtle">
+                          <CheckCircle2 size={16} className="text-emerald-700 flex-shrink-0 mt-0.5" />
+                          <div className="text-xs">
+                            <div className="font-bold text-text-primary">Requires +48V Phantom Power</div>
+                            <div className="text-text-secondary text-[11px] mt-0.5">Ensure interface or preamp delivers standard 48V.</div>
+                          </div>
+                        </div>
+                      ) : product.compatibility.connectorsIn?.some(c => c.phantomPowerCapable) ? (
+                        <div className="p-3 bg-white border border-border rounded-lg flex items-start gap-2 shadow-subtle">
+                          <CheckCircle2 size={16} className="text-emerald-700 flex-shrink-0 mt-0.5" />
+                          <div className="text-xs">
+                            <div className="font-bold text-text-primary">Provides +48V Phantom Power</div>
+                            <div className="text-text-secondary text-[11px] mt-0.5">Built-in 48V power rail for condenser microphones.</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-3 bg-white border border-border rounded-lg flex items-start gap-2 shadow-subtle">
+                          <CheckCircle2 size={16} className="text-emerald-700 flex-shrink-0 mt-0.5" />
+                          <div className="text-xs">
+                            <div className="font-bold text-text-primary">Passive / +48V Safe</div>
+                            <div className="text-text-secondary text-[11px] mt-0.5">Protected against inadvertent phantom power engagement.</div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Preamp Gain */}
+                      {product.compatibility.recommendedGainMinDb !== undefined && (
+                        <div className={cn(
+                          "p-3 rounded-lg border flex items-start gap-2 shadow-subtle",
+                          product.compatibility.recommendedGainMinDb >= 60
+                            ? "bg-amber-50/50 border-amber-200"
+                            : "bg-white border-border"
+                        )}>
+                          {product.compatibility.recommendedGainMinDb >= 60 ? (
+                            <AlertTriangle size={16} className="text-amber-700 flex-shrink-0 mt-0.5" />
+                          ) : (
+                            <CheckCircle2 size={16} className="text-emerald-700 flex-shrink-0 mt-0.5" />
+                          )}
+                          <div className="text-xs">
+                            <div className="font-bold text-text-primary">
+                              Gain Requirement: ≥ {product.compatibility.recommendedGainMinDb} dB
+                            </div>
+                            <div className="text-text-secondary text-[11px] mt-0.5">
+                              {product.compatibility.recommendedGainMinDb >= 60
+                                ? "Low-output dynamic mic; high-gain preamp or inline booster advised."
+                                : "Standard gain range provides adequate headroom."}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Headphone Impedance */}
+                      {product.compatibility.headphoneImpedanceMinOhms !== undefined && (
+                        <div className="p-3 bg-white border border-border rounded-lg flex items-start gap-2 shadow-subtle">
+                          <CheckCircle2 size={16} className="text-emerald-700 flex-shrink-0 mt-0.5" />
+                          <div className="text-xs">
+                            <div className="font-bold text-text-primary">
+                              Impedance: {product.compatibility.headphoneImpedanceMinOhms}Ω – {product.compatibility.headphoneImpedanceMaxOhms || 300}Ω
+                            </div>
+                            <div className="text-text-secondary text-[11px] mt-0.5">
+                              Calibrated for clean playback without amp distortion.
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Power */}
+                      {product.compatibility.powerRequirement && (
+                        <div className="p-3 bg-white border border-border rounded-lg flex items-start gap-2 shadow-subtle">
+                          <CheckCircle2 size={16} className="text-emerald-700 flex-shrink-0 mt-0.5" />
+                          <div className="text-xs">
+                            <div className="font-bold text-text-primary capitalize">
+                              Power: {product.compatibility.powerRequirement.replace(/-/g, " ")}
+                            </div>
+                            <div className="text-text-secondary text-[11px] mt-0.5">
+                              {product.compatibility.powerRequirement === "bus-powered"
+                                ? "Operates via host USB cable without separate AC wall adapter."
+                                : "Includes standard Indian 230V AC power cord."}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Connectors */}
+                      <div className="p-3 bg-white border border-border rounded-lg flex items-start gap-2 shadow-subtle">
+                        <CheckCircle2 size={16} className="text-emerald-700 flex-shrink-0 mt-0.5" />
+                        <div className="text-xs">
+                          <div className="font-bold text-text-primary">
+                            Interconnect: {product.compatibility.connectorsIn ? "Standard Balanced XLR / TRS" : "Balanced Audio Line"}
+                          </div>
+                          <div className="text-text-secondary text-[11px] mt-0.5">
+                            Fully compliant with professional studio interconnect standards.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Detailed Input / Output Specifications Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {product.compatibility.connectorsIn && (
+                      <div className="p-4 bg-white rounded-lg border border-border shadow-subtle space-y-2">
+                        <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-text-primary font-mono pb-2 border-b border-border-subtle">
+                          <Plug size={14} className="text-accent" />
+                          <span>Input Connectors & Capabilities</span>
+                        </div>
+                        <ul className="text-xs text-text-secondary space-y-1.5 pt-1">
+                          {product.compatibility.connectorsIn.map((conn, i) => (
+                            <li key={i} className="flex justify-between items-center">
+                              <span className="capitalize">{conn.type.replace(/-/g, " ")}</span>
+                              <span className="font-mono font-bold text-text-primary bg-canvas px-2 py-0.5 rounded border border-border-subtle">
+                                {conn.count}x {conn.phantomPowerCapable ? "(+48V Capable)" : ""}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {product.compatibility.connectorsOut && (
+                      <div className="p-4 bg-white rounded-lg border border-border shadow-subtle space-y-2">
+                        <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-text-primary font-mono pb-2 border-b border-border-subtle">
+                          <Cable size={14} className="text-accent" />
+                          <span>Output Connectors & Feeds</span>
+                        </div>
+                        <ul className="text-xs text-text-secondary space-y-1.5 pt-1">
+                          {product.compatibility.connectorsOut.map((conn, i) => (
+                            <li key={i} className="flex justify-between items-center">
+                              <span className="capitalize">{conn.type.replace(/-/g, " ")}</span>
+                              <span className="font-mono font-bold text-text-primary bg-canvas px-2 py-0.5 rounded border border-border-subtle">
+                                {conn.count}x
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
                 </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {product.compatibility.connectorsIn && (
-                    <div className="p-4 bg-canvas rounded-lg border border-border-subtle space-y-2">
-                      <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-text-primary font-mono">
-                        <Plug size={14} className="text-accent" />
-                        <span>Input Connectors</span>
-                      </div>
-                      <ul className="text-xs text-text-secondary space-y-1">
-                        {product.compatibility.connectorsIn.map((conn, i) => (
-                          <li key={i} className="flex justify-between">
-                            <span className="capitalize">{conn.type.replace(/-/g, " ")}</span>
-                            <span className="font-mono font-bold text-text-primary">
-                              {conn.count}x {conn.phantomPowerCapable ? "(+48V Capable)" : ""}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {product.compatibility.connectorsOut && (
-                    <div className="p-4 bg-canvas rounded-lg border border-border-subtle space-y-2">
-                      <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-text-primary font-mono">
-                        <Cable size={14} className="text-accent" />
-                        <span>Output Connectors</span>
-                      </div>
-                      <ul className="text-xs text-text-secondary space-y-1">
-                        {product.compatibility.connectorsOut.map((conn, i) => (
-                          <li key={i} className="flex justify-between">
-                            <span className="capitalize">{conn.type.replace(/-/g, " ")}</span>
-                            <span className="font-mono font-bold text-text-primary">{conn.count}x</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {product.compatibility.recommendedGainMinDb !== undefined && (
-                    <div className="p-4 bg-canvas rounded-lg border border-border-subtle space-y-1">
-                      <div className="text-xs font-bold uppercase tracking-wider text-text-primary font-mono">
-                        Preamplifier Gain Requirement
-                      </div>
-                      <div className="text-sm font-bold text-text-primary font-mono">
-                        ≥ {product.compatibility.recommendedGainMinDb} dB Clean Gain
-                      </div>
-                      <p className="text-[11px] text-text-muted">
-                        Requires a high-gain audio interface or an inline preamplifier to reach optimal recording levels.
-                      </p>
-                    </div>
-                  )}
-
-                  {product.compatibility.headphoneImpedanceMinOhms !== undefined && (
-                    <div className="p-4 bg-canvas rounded-lg border border-border-subtle space-y-1">
-                      <div className="text-xs font-bold uppercase tracking-wider text-text-primary font-mono">
-                        Headphone Driving Impedance
-                      </div>
-                      <div className="text-sm font-bold text-text-primary font-mono">
-                        {product.compatibility.headphoneImpedanceMinOhms}Ω – {product.compatibility.headphoneImpedanceMaxOhms || 300}Ω
-                      </div>
-                      <p className="text-[11px] text-text-muted">
-                        Calibrated for clean playback without amplifier distortion or frequency attenuation.
-                      </p>
-                    </div>
-                  )}
-
-                  {product.compatibility.powerRequirement && (
-                    <div className="p-4 bg-canvas rounded-lg border border-border-subtle space-y-1">
-                      <div className="text-xs font-bold uppercase tracking-wider text-text-primary font-mono">
-                        Power Requirement
-                      </div>
-                      <div className="text-sm font-bold text-text-primary capitalize font-mono">
-                        {product.compatibility.powerRequirement.replace(/-/g, " ")}
-                      </div>
-                      <p className="text-[11px] text-text-muted">
-                        Verify power delivery before deployment on mobile or bus-powered setups.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* 2. Overview */}
             {activeTab === "overview" && (

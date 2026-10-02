@@ -7,14 +7,7 @@ import { RatingStars } from "@/components/ui/RatingStars";
 import { Badge } from "@/components/ui/Badge";
 import { useCommerce } from "@/context/CommerceContext";
 import { formatInr, calculateDiscountPercent } from "@/lib/utils";
-import { SITE_POLICIES } from "@/config/siteConfig";
-import {
-  Heart,
-  Scale,
-  ShoppingBag,
-  Check,
-  Zap,
-} from "lucide-react";
+import { Heart, Scale, ShoppingBag, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ProductCardProps {
@@ -46,17 +39,17 @@ export function ProductCard({
   const inCompare = isInCompare(product.id);
   const inWishlist = isInWishlist(product.id);
 
-  // Key spec tags to show on retail cards
+  // 2 to 3 selective high-relevance technical spec pills
   const highlightSpecs = product.specifications
     .filter((s) => s.highlight)
-    .slice(0, 2);
+    .slice(0, 3);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     addToCart(product.id, variant.id, 1);
     setAddedAnimation(true);
-    setTimeout(() => setAddedAnimation(false), 1200);
+    setTimeout(() => setAddedAnimation(false), 1400);
   };
 
   const handleToggleCompare = (e: React.MouseEvent) => {
@@ -79,64 +72,32 @@ export function ProductCard({
         className
       )}
     >
-      {/* Top action row: Badges & Wishlist/Compare */}
       <div>
-        <div className="flex items-start justify-between gap-1 mb-2">
-          {/* Status Badges */}
-          <div className="flex flex-wrap gap-1">
-            {discountPercent > 0 && (
-              <Badge variant="accent" size="sm">
-                Save {discountPercent}%
-              </Badge>
-            )}
-            {product.tags.includes("bestseller") && (
-              <Badge variant="default" size="sm" className="font-semibold text-text-primary">
-                Bestseller
-              </Badge>
-            )}
-            {product.tags.includes("pro-choice") && (
-              <Badge variant="brand" size="sm">
-                Pro Gear
-              </Badge>
-            )}
-          </div>
+        {/* 1. BRAND (Small uppercase header) */}
+        <div className="flex items-center justify-between gap-1 mb-1.5">
+          <Link
+            href={`/brands/${product.brand.slug}`}
+            className="text-[11px] font-bold uppercase tracking-wider text-text-muted hover:text-accent transition-colors font-mono"
+          >
+            {product.brand.name}
+          </Link>
 
-          {/* Quick Action Icons */}
-          <div className="flex items-center gap-1">
-            {showCompare && (
-              <button
-                type="button"
-                onClick={handleToggleCompare}
-                className={cn(
-                  "p-1.5 rounded-md transition-colors text-text-muted hover:text-text-primary hover:bg-canvas",
-                  inCompare && "text-accent bg-accent-subtle font-bold"
-                )}
-                title={inCompare ? "Remove from comparison" : "Compare technical specs"}
-                aria-label="Compare"
-              >
-                <Scale size={15} />
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={handleToggleWishlist}
-              className={cn(
-                "p-1.5 rounded-md transition-colors text-text-muted hover:text-text-primary hover:bg-canvas",
-                inWishlist && "text-accent fill-accent"
-              )}
-              title={inWishlist ? "Saved in wishlist" : "Add to wishlist"}
-              aria-label="Wishlist"
-            >
-              <Heart size={15} className={inWishlist ? "fill-accent text-accent" : ""} />
-            </button>
-          </div>
+          {/* Quick status badge if on sale or pro */}
+          {discountPercent > 0 ? (
+            <span className="text-[10px] font-bold text-accent bg-accent-subtle px-1.5 py-0.5 rounded font-mono">
+              Save {discountPercent}%
+            </span>
+          ) : product.tags.includes("bestseller") ? (
+            <span className="text-[10px] font-bold text-text-primary bg-canvas px-1.5 py-0.5 rounded border border-border-subtle">
+              Bestseller
+            </span>
+          ) : null}
         </div>
 
-        {/* Product Image Link */}
+        {/* 2. PRODUCT IMAGE */}
         <Link
           href={`/products/${product.slug}`}
-          className="block relative aspect-square bg-[#FBFBFA] rounded-md overflow-hidden mb-3 p-3 flex items-center justify-center border border-border-subtle group-hover:border-border transition-colors"
+          className="block relative aspect-square bg-[#FBFBFA] rounded-md overflow-hidden p-3 flex items-center justify-center border border-border-subtle group-hover:border-border transition-colors"
         >
           <img
             src={variant.images[0]}
@@ -146,42 +107,33 @@ export function ProductCard({
           />
 
           {variant.stockStatus === "low-stock" && (
-            <div className="absolute bottom-2 left-2 bg-amber-500/90 text-white text-[10px] font-bold px-1.5 py-0.5 rounded backdrop-blur-sm">
+            <div className="absolute bottom-2 left-2 bg-amber-600/90 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">
               Only {variant.stockCount} left
             </div>
           )}
         </Link>
 
-        {/* Brand & Category Breadcrumb */}
-        <div className="flex items-center gap-1.5 mb-1 text-[11px] font-bold uppercase tracking-wider text-text-muted">
+        {/* 3. PRODUCT NAME */}
+        <div className="mt-3">
           <Link
-            href={`/brands/${product.brand.slug}`}
-            className="text-text-secondary hover:text-accent transition-colors"
+            href={`/products/${product.slug}`}
+            className="block group-hover:text-accent transition-colors"
           >
-            {product.brand.name}
+            <h3 className="font-semibold text-sm text-text-primary line-clamp-2 leading-snug">
+              {product.title}
+            </h3>
           </Link>
-          <span>&bull;</span>
-          <span className="font-normal lowercase first-letter:uppercase text-text-muted truncate">
-            {product.subCategorySlug.replace("-", " ")}
-          </span>
+          <p className="text-xs text-text-secondary line-clamp-1 mt-0.5">
+            {product.subtitle}
+          </p>
         </div>
 
-        {/* Product Title */}
-        <Link
-          href={`/products/${product.slug}`}
-          className="block group-hover:text-accent transition-colors"
-        >
-          <h3 className="font-semibold text-sm text-text-primary line-clamp-2 leading-snug">
-            {product.title}
-          </h3>
-        </Link>
+        {/* 4. STARS + COUNT */}
+        <div className="mt-2 flex items-center gap-1.5">
+          <RatingStars rating={product.rating} reviewCount={product.reviewCount} size="sm" />
+        </div>
 
-        {/* Short Descriptor / Subtitle */}
-        <p className="text-xs text-text-secondary line-clamp-1 mt-1 font-normal">
-          {product.subtitle}
-        </p>
-
-        {/* Key Highlight Specs Pills */}
+        {/* 5. SELECTIVE TECH SPECS PILLS */}
         {highlightSpecs.length > 0 && (
           <div className="mt-2.5 flex flex-wrap gap-1">
             {highlightSpecs.map((spec) => (
@@ -195,16 +147,11 @@ export function ProductCard({
             ))}
           </div>
         )}
-
-        {/* Rating Block */}
-        <div className="mt-2.5">
-          <RatingStars rating={product.rating} reviewCount={product.reviewCount} size="sm" />
-        </div>
       </div>
 
-      {/* Bottom Commerce Block */}
-      <div className="mt-4 pt-3 border-t border-border-subtle">
-        {/* Pricing & Savings */}
+      {/* 6. COMMERCE ACTION BLOCK */}
+      <div className="mt-3.5 pt-3 border-t border-border-subtle">
+        {/* PRICE + MRP + SAVINGS */}
         <div className="flex items-baseline justify-between">
           <div className="flex items-baseline gap-2">
             <span className="text-base sm:text-lg font-bold text-text-primary font-mono tabular-nums">
@@ -217,39 +164,39 @@ export function ProductCard({
             )}
           </div>
 
-          {/* Stock state */}
+          {/* STOCK STATUS (● In Stock) */}
           <div className="text-[11px] font-semibold flex items-center gap-1">
             {variant.stockStatus === "in-stock" && (
-              <span className="text-emerald-700 flex items-center gap-0.5">
+              <span className="text-emerald-700 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 inline-block" />
                 In Stock
               </span>
             )}
             {variant.stockStatus === "low-stock" && (
-              <span className="text-amber-700 flex items-center gap-0.5">
+              <span className="text-amber-700 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-600 inline-block" />
                 Low Stock
+              </span>
+            )}
+            {variant.stockStatus === "pre-order" && (
+              <span className="text-blue-700 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-600 inline-block" />
+                Pre-Order
               </span>
             )}
           </div>
         </div>
 
-        {/* EMI Hook */}
-        <div className="mt-1 flex items-center justify-between text-[11px] text-text-muted">
-          <span>EMI from <strong className="text-text-secondary font-mono">{formatInr(product.emiStartingInr)}/mo</strong></span>
-          <span className="text-emerald-700 font-medium">{SITE_POLICIES.transit.badgeText}</span>
-        </div>
-
-        {/* Add to Cart button */}
-        <div className="mt-3">
+        {/* 7. [ ADD TO CART ] BUTTON */}
+        <div className="mt-2.5">
           <button
             type="button"
             onClick={handleAddToCart}
             className={cn(
-              "w-full py-2 px-3 text-xs font-semibold rounded-md flex items-center justify-center gap-1.5 transition-all",
+              "w-full py-2 px-3 text-xs font-semibold rounded-md flex items-center justify-center gap-1.5 transition-all shadow-subtle active:scale-[0.98]",
               addedAnimation
                 ? "bg-emerald-700 text-white"
-                : "bg-[#171717] text-white hover:bg-accent hover:text-white"
+                : "bg-[#171717] hover:bg-accent text-white"
             )}
           >
             {addedAnimation ? (
@@ -264,6 +211,38 @@ export function ProductCard({
               </>
             )}
           </button>
+        </div>
+
+        {/* 8. WISHLIST & COMPARE ROW (Below Add to Cart) */}
+        <div className="mt-2 pt-2 border-t border-border-subtle flex items-center justify-between text-xs text-text-muted">
+          <button
+            type="button"
+            onClick={handleToggleWishlist}
+            className={cn(
+              "inline-flex items-center gap-1 text-[11px] font-medium hover:text-text-primary transition-colors py-0.5",
+              inWishlist && "text-accent font-semibold"
+            )}
+          >
+            <Heart
+              size={13}
+              className={inWishlist ? "fill-accent text-accent" : "text-text-muted"}
+            />
+            <span>{inWishlist ? "Saved" : "Save"}</span>
+          </button>
+
+          {showCompare && (
+            <button
+              type="button"
+              onClick={handleToggleCompare}
+              className={cn(
+                "inline-flex items-center gap-1 text-[11px] font-medium hover:text-text-primary transition-colors py-0.5",
+                inCompare && "text-accent font-semibold"
+              )}
+            >
+              <Scale size={13} className={inCompare ? "text-accent" : "text-text-muted"} />
+              <span>{inCompare ? "In Compare" : "Compare"}</span>
+            </button>
+          )}
         </div>
       </div>
     </div>

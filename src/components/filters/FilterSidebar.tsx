@@ -168,7 +168,7 @@ export function FilterSidebar({
           onClick={() => setBrandsOpen(!brandsOpen)}
           className="w-full flex items-center justify-between font-bold text-xs uppercase tracking-wider text-text-primary"
         >
-          <span>Authorized Brand</span>
+          <span>Brand / Manufacturer</span>
           <ChevronDown
             size={14}
             className={cn("transition-transform", !brandsOpen && "-rotate-90")}

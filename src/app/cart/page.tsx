@@ -17,6 +17,7 @@ import {
   ArrowLeft,
   CreditCard,
 } from "lucide-react";
+import { SITE_POLICIES } from "@/config/siteConfig";
 
 export default function CartPage() {
   const { cartItems, removeFromCart, cartCount } = useCommerce();
@@ -170,16 +171,16 @@ export default function CartPage() {
 
               <div className="pt-4 border-t border-border-subtle space-y-2 text-[11px] text-text-muted">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck size={14} className="text-accent flex-shrink-0" />
-                  <span>Authorized Indian distributor serial guarantee</span>
+                  <ShieldCheck size={14} className="text-emerald-700 flex-shrink-0" />
+                  <span>{SITE_POLICIES.authenticity.label}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Truck size={14} className="text-accent flex-shrink-0" />
-                  <span>Bluedart Air insured packaging with tracking</span>
+                  <span>{SITE_POLICIES.transit.label}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CreditCard size={14} className="text-accent flex-shrink-0" />
-                  <span>0% EMI support on all major Indian banks</span>
+                  <CreditCard size={14} className="text-text-muted flex-shrink-0" />
+                  <span>{SITE_POLICIES.financing.label}</span>
                 </div>
               </div>
             </div>

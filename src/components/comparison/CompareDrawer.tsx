@@ -24,8 +24,8 @@ export function CompareDrawer() {
   const comparedProducts = PRODUCTS.filter((p) => compareIds.includes(p.id));
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#171717] text-white border-t border-[#333330] shadow-modal animate-in slide-in-from-bottom-5 duration-200">
-      <Container size="wide" className="py-3">
+    <div className="fixed bottom-14 lg:bottom-0 left-0 right-0 z-50 bg-[#171717] text-white border-t border-[#333330] shadow-modal animate-in slide-in-from-bottom-5 duration-200">
+      <Container size="wide" className="py-2.5 sm:py-3">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
           {/* Left: Summary Title & Clear */}
           <div className="flex items-center gap-3">
