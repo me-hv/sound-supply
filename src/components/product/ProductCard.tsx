@@ -7,6 +7,7 @@ import { RatingStars } from "@/components/ui/RatingStars";
 import { Badge } from "@/components/ui/Badge";
 import { useCommerce } from "@/context/CommerceContext";
 import { formatInr, calculateDiscountPercent } from "@/lib/utils";
+import { SITE_POLICIES } from "@/config/siteConfig";
 import {
   Heart,
   Scale,
@@ -236,7 +237,7 @@ export function ProductCard({
         {/* EMI Hook */}
         <div className="mt-1 flex items-center justify-between text-[11px] text-text-muted">
           <span>EMI from <strong className="text-text-secondary font-mono">{formatInr(product.emiStartingInr)}/mo</strong></span>
-          <span className="text-emerald-700 font-medium">Free Delivery</span>
+          <span className="text-emerald-700 font-medium">{SITE_POLICIES.transit.badgeText}</span>
         </div>
 
         {/* Add to Cart button */}

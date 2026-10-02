@@ -6,6 +6,7 @@ import { PRODUCTS } from "@/data/products";
 import { ProductCard } from "@/components/product/ProductCard";
 import { Container } from "@/components/ui/Container";
 import { Breadcrumbs } from "@/components/navigation/Breadcrumbs";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Search } from "lucide-react";
 
 function SearchContent() {
@@ -45,14 +46,13 @@ function SearchContent() {
         </div>
 
         {results.length === 0 ? (
-          <div className="bg-white border border-border rounded-xl p-12 text-center space-y-3">
-            <p className="text-base font-bold text-text-primary">
-              No audio hardware matches &ldquo;{q}&rdquo;.
-            </p>
-            <p className="text-xs text-text-secondary max-w-sm mx-auto">
-              Check your spelling or try searching for a brand name like &ldquo;Focusrite&rdquo;, &ldquo;Shure&rdquo;, &ldquo;Yamaha&rdquo;, or equipment types like &ldquo;monitors&rdquo; or &ldquo;headphones&rdquo;.
-            </p>
-          </div>
+          <EmptyState
+            icon={Search}
+            title={`No equipment matches “${q}”`}
+            description="Try searching for a brand like Focusrite or Yamaha, or an equipment category like 'audio interfaces' or 'studio monitors'."
+            actionLabel="Browse Full Catalog"
+            actionHref="/categories/studio-recording"
+          />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {results.map((product) => (

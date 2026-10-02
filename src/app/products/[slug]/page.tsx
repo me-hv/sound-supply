@@ -11,6 +11,7 @@ import { RatingStars } from "@/components/ui/RatingStars";
 import { Badge } from "@/components/ui/Badge";
 import { Container } from "@/components/ui/Container";
 import { useCommerce } from "@/context/CommerceContext";
+import { SITE_POLICIES } from "@/config/siteConfig";
 import {
   formatInr,
   calculateDiscountPercent,
@@ -30,6 +31,8 @@ import {
   Clock,
   Sparkles,
   Info,
+  Cable,
+  Plug,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -67,9 +70,9 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
   const [pincode, setPincode] = useState("");
   const [pincodeResult, setPincodeResult] = useState<string | null>(null);
 
-  // Active Tab State (Overview, Features, Specifications, WhatsIncluded, Reviews)
+  // Active Tab State (Overview, Features, Specifications, Compatibility, WhatsIncluded, Reviews)
   const [activeTab, setActiveTab] = useState<
-    "overview" | "features" | "specifications" | "whats-included" | "reviews"
+    "overview" | "features" | "specifications" | "compatibility" | "whats-included" | "reviews"
   >("specifications");
 
   const [addedAnimation, setAddedAnimation] = useState(false);
@@ -99,13 +102,8 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
     setTimeout(() => setAddedAnimation(false), 1500);
   };
 
-  // Grouped technical specifications
-  const specGroups = [
-    "Audio Performance",
-    "Connectivity & I/O",
-    "Hardware & Build",
-    "Compatibility & Power",
-  ] as const;
+  // Dynamically extract category-specific specification groups from product data
+  const specGroups = Array.from(new Set(product.specifications.map((s) => s.group)));
 
   // Breadcrumbs
   const category = CATEGORIES.find((c) => c.slug === product.categorySlug);
@@ -430,15 +428,15 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
               <div className="pt-4 border-t border-border-subtle grid grid-cols-3 gap-2 text-center text-[10px] text-text-secondary">
                 <div className="p-2 bg-canvas rounded">
                   <ShieldCheck size={16} className="mx-auto text-accent mb-1" />
-                  <span>{product.warrantySummary}</span>
+                  <span>{SITE_POLICIES.warranty.badgeText}</span>
                 </div>
                 <div className="p-2 bg-canvas rounded">
                   <Truck size={16} className="mx-auto text-accent mb-1" />
-                  <span>Free Insured Air Transit</span>
+                  <span>{SITE_POLICIES.transit.badgeText}</span>
                 </div>
                 <div className="p-2 bg-canvas rounded">
                   <RotateCcw size={16} className="mx-auto text-accent mb-1" />
-                  <span>7-Day DOA Replacement</span>
+                  <span>{SITE_POLICIES.returns.badgeText}</span>
                 </div>
               </div>
             </div>
@@ -451,6 +449,7 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
           <div className="flex items-center border-b border-border overflow-x-auto bg-[#FAFAF9]">
             {[
               { id: "specifications", label: "Technical Specifications" },
+              ...(product.compatibility ? [{ id: "compatibility", label: "Signal Chain & Compatibility" }] : []),
               { id: "overview", label: "Overview" },
               { id: "features", label: "Key Features" },
               { id: "whats-included", label: "What's in the Box" },
@@ -468,6 +467,7 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
                 )}
               >
                 {tab.id === "specifications" && <Scale size={14} />}
+                {tab.id === "compatibility" && <Cable size={14} />}
                 <span>{tab.label}</span>
               </button>
             ))}
@@ -520,6 +520,100 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
                       </div>
                     );
                   })}
+                </div>
+              </div>
+            )}
+
+            {/* 1B. Signal Chain & Compatibility Pane */}
+            {activeTab === "compatibility" && product.compatibility && (
+              <div className="space-y-6 max-w-3xl">
+                <div>
+                  <h3 className="text-lg font-bold text-text-primary mb-1">
+                    Signal Chain & Hardware Compatibility
+                  </h3>
+                  <p className="text-xs text-text-secondary">
+                    Input/output routing parameters, electrical levels, and required cables for this unit.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {product.compatibility.connectorsIn && (
+                    <div className="p-4 bg-canvas rounded-lg border border-border-subtle space-y-2">
+                      <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-text-primary font-mono">
+                        <Plug size={14} className="text-accent" />
+                        <span>Input Connectors</span>
+                      </div>
+                      <ul className="text-xs text-text-secondary space-y-1">
+                        {product.compatibility.connectorsIn.map((conn, i) => (
+                          <li key={i} className="flex justify-between">
+                            <span className="capitalize">{conn.type.replace(/-/g, " ")}</span>
+                            <span className="font-mono font-bold text-text-primary">
+                              {conn.count}x {conn.phantomPowerCapable ? "(+48V Capable)" : ""}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {product.compatibility.connectorsOut && (
+                    <div className="p-4 bg-canvas rounded-lg border border-border-subtle space-y-2">
+                      <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-text-primary font-mono">
+                        <Cable size={14} className="text-accent" />
+                        <span>Output Connectors</span>
+                      </div>
+                      <ul className="text-xs text-text-secondary space-y-1">
+                        {product.compatibility.connectorsOut.map((conn, i) => (
+                          <li key={i} className="flex justify-between">
+                            <span className="capitalize">{conn.type.replace(/-/g, " ")}</span>
+                            <span className="font-mono font-bold text-text-primary">{conn.count}x</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {product.compatibility.recommendedGainMinDb !== undefined && (
+                    <div className="p-4 bg-canvas rounded-lg border border-border-subtle space-y-1">
+                      <div className="text-xs font-bold uppercase tracking-wider text-text-primary font-mono">
+                        Preamplifier Gain Requirement
+                      </div>
+                      <div className="text-sm font-bold text-text-primary font-mono">
+                        ≥ {product.compatibility.recommendedGainMinDb} dB Clean Gain
+                      </div>
+                      <p className="text-[11px] text-text-muted">
+                        Requires a high-gain audio interface or an inline preamplifier to reach optimal recording levels.
+                      </p>
+                    </div>
+                  )}
+
+                  {product.compatibility.headphoneImpedanceMinOhms !== undefined && (
+                    <div className="p-4 bg-canvas rounded-lg border border-border-subtle space-y-1">
+                      <div className="text-xs font-bold uppercase tracking-wider text-text-primary font-mono">
+                        Headphone Driving Impedance
+                      </div>
+                      <div className="text-sm font-bold text-text-primary font-mono">
+                        {product.compatibility.headphoneImpedanceMinOhms}Ω – {product.compatibility.headphoneImpedanceMaxOhms || 300}Ω
+                      </div>
+                      <p className="text-[11px] text-text-muted">
+                        Calibrated for clean playback without amplifier distortion or frequency attenuation.
+                      </p>
+                    </div>
+                  )}
+
+                  {product.compatibility.powerRequirement && (
+                    <div className="p-4 bg-canvas rounded-lg border border-border-subtle space-y-1">
+                      <div className="text-xs font-bold uppercase tracking-wider text-text-primary font-mono">
+                        Power Requirement
+                      </div>
+                      <div className="text-sm font-bold text-text-primary capitalize font-mono">
+                        {product.compatibility.powerRequirement.replace(/-/g, " ")}
+                      </div>
+                      <p className="text-[11px] text-text-muted">
+                        Verify power delivery before deployment on mobile or bus-powered setups.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

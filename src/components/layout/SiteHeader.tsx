@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Container } from "@/components/ui/Container";
 import { SearchBar } from "@/components/search/SearchBar";
 import { UtilityBar } from "./UtilityBar";
 import { CategoryNav } from "@/components/navigation/CategoryNav";
+import { Logo } from "@/components/ui/Logo";
 import { useCommerce } from "@/context/CommerceContext";
 import {
-  SlidersHorizontal,
   Heart,
   ShoppingBag,
   User,
@@ -28,6 +28,11 @@ export function SiteHeader() {
   const { cartCount, wishlistIds, compareIds, setCompareDrawerOpen } = useCommerce();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-border">
       {/* Top utility ticker */}
@@ -42,27 +47,16 @@ export function SiteHeader() {
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 text-text-primary hover:bg-canvas rounded-md"
-                aria-label="Toggle Navigation Menu"
+                className="p-2 text-text-primary hover:bg-canvas rounded-md transition-colors"
+                aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+                aria-expanded={mobileMenuOpen}
               >
                 {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
               </button>
             </div>
 
-            {/* Brand Logo */}
-            <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 group">
-              <div className="w-9 h-9 bg-accent rounded-lg flex items-center justify-center text-white shadow-subtle group-hover:bg-accent-hover transition-colors">
-                <SlidersHorizontal size={20} className="stroke-[2.2]" />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-extrabold text-lg sm:text-xl tracking-tight text-text-primary leading-none font-sans">
-                  SOUND<span className="text-accent">SUPPLY</span>
-                </span>
-                <span className="text-[9px] uppercase tracking-widest text-text-muted font-bold font-mono">
-                  Pro Audio &bull; India
-                </span>
-              </div>
-            </Link>
+            {/* Brand Logo & Wordmark */}
+            <Logo size="md" variant="light" showTagline={true} />
 
             {/* Central Universal Search Bar */}
             <div className="flex-1 max-w-2xl hidden md:block">
@@ -75,13 +69,13 @@ export function SiteHeader() {
               <button
                 type="button"
                 onClick={() => setCompareDrawerOpen(true)}
-                className="relative p-2 text-text-secondary hover:text-text-primary hover:bg-canvas rounded-md transition-colors flex flex-col items-center justify-center group"
-                title="Product Spec Comparison"
+                className="relative p-2 text-text-secondary hover:text-text-primary hover:bg-canvas rounded-md transition-colors flex flex-col items-center justify-center group focus-visible:ring-1 focus-visible:ring-accent"
+                aria-label={`Product comparison matrix, ${compareIds.length} items selected`}
               >
                 <Scale size={20} />
                 <span className="text-[10px] font-medium hidden xl:inline mt-0.5">Compare</span>
                 {compareIds.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#171717] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#171717] text-white text-[10px] font-bold rounded-full flex items-center justify-center font-mono">
                     {compareIds.length}
                   </span>
                 )}
@@ -90,13 +84,13 @@ export function SiteHeader() {
               {/* Wishlist */}
               <Link
                 href="/wishlist"
-                className="relative p-2 text-text-secondary hover:text-text-primary hover:bg-canvas rounded-md transition-colors flex flex-col items-center justify-center group"
-                title="Saved Gear Wishlist"
+                className="relative p-2 text-text-secondary hover:text-text-primary hover:bg-canvas rounded-md transition-colors flex flex-col items-center justify-center group focus-visible:ring-1 focus-visible:ring-accent"
+                aria-label={`Saved gear wishlist, ${wishlistIds.length} items saved`}
               >
                 <Heart size={20} />
                 <span className="text-[10px] font-medium hidden xl:inline mt-0.5">Saved</span>
                 {wishlistIds.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-accent text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-accent text-white text-[10px] font-bold rounded-full flex items-center justify-center font-mono">
                     {wishlistIds.length}
                   </span>
                 )}
@@ -105,8 +99,8 @@ export function SiteHeader() {
               {/* Account */}
               <Link
                 href="/account"
-                className="p-2 text-text-secondary hover:text-text-primary hover:bg-canvas rounded-md transition-colors flex flex-col items-center justify-center group"
-                title="Account & Orders"
+                className="p-2 text-text-secondary hover:text-text-primary hover:bg-canvas rounded-md transition-colors flex flex-col items-center justify-center group focus-visible:ring-1 focus-visible:ring-accent"
+                aria-label="Account portal"
               >
                 <User size={20} />
                 <span className="text-[10px] font-medium hidden xl:inline mt-0.5">Account</span>
@@ -115,18 +109,19 @@ export function SiteHeader() {
               {/* Shopping Cart Button */}
               <Link
                 href="/cart"
-                className="inline-flex items-center gap-2 bg-[#171717] hover:bg-[#2C2C2C] text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-subtle transition-colors ml-1"
+                className="inline-flex items-center gap-2 bg-[#171717] hover:bg-[#2C2C2C] text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-subtle transition-all active:scale-[0.98] ml-1 focus-visible:ring-2 focus-visible:ring-accent"
+                aria-label={`Shopping cart containing ${cartCount} items`}
               >
                 <div className="relative">
                   <ShoppingBag size={18} />
                   {cartCount > 0 && (
-                    <span className="absolute -top-2 -right-2 w-4 h-4 bg-accent text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                    <span className="absolute -top-2 -right-2 w-4 h-4 bg-accent text-white text-[10px] font-bold rounded-full flex items-center justify-center font-mono">
                       {cartCount}
                     </span>
                   )}
                 </div>
                 <div className="hidden sm:flex flex-col text-left leading-tight">
-                  <span className="text-[10px] text-gray-400 uppercase font-mono">My Cart</span>
+                  <span className="text-[10px] text-gray-400 uppercase font-mono">Studio Cart</span>
                   <span className="font-bold">{cartCount > 0 ? `${cartCount} items` : "Cart"}</span>
                 </div>
               </Link>
@@ -163,11 +158,11 @@ export function SiteHeader() {
                 className="flex items-center gap-2 p-3 bg-red-50 rounded-lg border border-red-200 text-xs font-bold text-accent"
               >
                 <Flame size={16} />
-                <span>Deals & Offers</span>
+                <span>Deals & Bundles</span>
               </Link>
             </div>
 
-            {/* Category list accordion on mobile */}
+            {/* Category list on mobile */}
             <div className="space-y-1">
               <div className="text-[11px] font-bold uppercase tracking-wider text-text-muted px-2 py-1">
                 Browse Categories
@@ -193,7 +188,7 @@ export function SiteHeader() {
                 className="flex items-center gap-2.5 p-3 rounded-lg hover:bg-canvas text-sm font-medium text-text-secondary"
               >
                 <BookOpen size={16} className="text-text-muted" />
-                <span>Buying Guides & Tone Tips</span>
+                <span>Buying Guides & Technical Advice</span>
               </Link>
             </div>
           </div>

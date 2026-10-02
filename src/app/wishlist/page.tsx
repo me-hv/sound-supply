@@ -7,7 +7,8 @@ import { PRODUCTS } from "@/data/products";
 import { ProductCard } from "@/components/product/ProductCard";
 import { Container } from "@/components/ui/Container";
 import { Breadcrumbs } from "@/components/navigation/Breadcrumbs";
-import { Heart, ArrowRight } from "lucide-react";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Heart } from "lucide-react";
 
 export default function WishlistPage() {
   const { wishlistIds } = useCommerce();
@@ -36,22 +37,13 @@ export default function WishlistPage() {
         </div>
 
         {savedProducts.length === 0 ? (
-          <div className="bg-white border border-border rounded-xl p-12 text-center space-y-4 max-w-lg mx-auto">
-            <Heart size={32} className="mx-auto text-text-muted" />
-            <h2 className="text-lg font-bold text-text-primary">Your wishlist is empty</h2>
-            <p className="text-xs text-text-secondary">
-              Click the heart icon on any piece of gear to bookmark it for future studio sessions.
-            </p>
-            <div>
-              <Link
-                href="/categories/studio-recording"
-                className="inline-flex items-center gap-1.5 bg-accent hover:bg-accent-hover text-white text-xs font-bold px-4 py-2.5 rounded-md transition-colors"
-              >
-                <span>Browse Gear</span>
-                <ArrowRight size={14} />
-              </Link>
-            </div>
-          </div>
+          <EmptyState
+            icon={Heart}
+            title="Your saved gear shortlist is empty"
+            description="Click the heart icon on any audio interface, microphone, or instrument to bookmark it for future comparison."
+            actionLabel="Discover Pro Audio Gear"
+            actionHref="/categories/studio-recording"
+          />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {savedProducts.map((p) => (

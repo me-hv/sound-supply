@@ -2,15 +2,14 @@
 
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
+import { Logo } from "@/components/ui/Logo";
+import { SITE_POLICIES, SITE_CONFIG } from "@/config/siteConfig";
 import {
-  SlidersHorizontal,
   ShieldCheck,
   Truck,
-  RotateCcw,
   Headphones,
-  Mail,
-  ArrowRight,
   CreditCard,
+  ArrowRight,
 } from "lucide-react";
 import { CATEGORIES } from "@/data/categories";
 
@@ -26,9 +25,9 @@ export function SiteFooter() {
                 <ShieldCheck size={22} />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-white">100% Genuine Gear</h4>
+                <h4 className="text-sm font-bold text-white">{SITE_POLICIES.authenticity.label}</h4>
                 <p className="text-xs text-[#9E9E9A] mt-1 leading-relaxed">
-                  Direct authorized Indian distribution. Every unit carries authentic manufacturer serial warranty.
+                  {SITE_POLICIES.authenticity.shortDescription}
                 </p>
               </div>
             </div>
@@ -38,9 +37,9 @@ export function SiteFooter() {
                 <Truck size={22} />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-white">Insured Indian Shipping</h4>
+                <h4 className="text-sm font-bold text-white">{SITE_POLICIES.transit.label}</h4>
                 <p className="text-xs text-[#9E9E9A] mt-1 leading-relaxed">
-                  Specialized double-box shock-absorbing packaging dispatched via Bluedart Express with transit insurance.
+                  {SITE_POLICIES.transit.shortDescription}
                 </p>
               </div>
             </div>
@@ -50,9 +49,9 @@ export function SiteFooter() {
                 <Headphones size={22} />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-white">Gear Specialist Advisory</h4>
+                <h4 className="text-sm font-bold text-white">{SITE_POLICIES.support.label}</h4>
                 <p className="text-xs text-[#9E9E9A] mt-1 leading-relaxed">
-                  Talk directly with working sound engineers and producers for pre-purchase impedance and signal advice.
+                  {SITE_POLICIES.support.shortDescription}
                 </p>
               </div>
             </div>
@@ -62,9 +61,9 @@ export function SiteFooter() {
                 <CreditCard size={22} />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-white">Flexible Indian EMIs</h4>
+                <h4 className="text-sm font-bold text-white">{SITE_POLICIES.financing.label}</h4>
                 <p className="text-xs text-[#9E9E9A] mt-1 leading-relaxed">
-                  0% No-Cost EMI tenures on major bank credit cards, debit cards, and cardless finance partners.
+                  {SITE_POLICIES.financing.shortDescription}
                 </p>
               </div>
             </div>
@@ -78,14 +77,7 @@ export function SiteFooter() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
             {/* Brand Intro & Newsletter */}
             <div className="col-span-2 space-y-4">
-              <Link href="/" className="flex items-center gap-2.5">
-                <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center text-white">
-                  <SlidersHorizontal size={18} />
-                </div>
-                <span className="font-extrabold text-xl tracking-tight text-white font-sans">
-                  SOUND<span className="text-accent">SUPPLY</span>
-                </span>
-              </Link>
+              <Logo size="md" variant="dark" showTagline={true} />
               <p className="text-xs text-[#A6A6A2] leading-relaxed max-w-sm">
                 India&apos;s dedicated commerce destination for music producers, sound designers, gigging artists, and recording studios. Everything you need to make sound.
               </p>
@@ -96,12 +88,13 @@ export function SiteFooter() {
                   Sound Supply Insider
                 </div>
                 <p className="text-[11px] text-[#888884] mb-2.5">
-                  Exclusive price drops, B-stock inventory alerts, and studio setup breakdowns.
+                  Gear updates, B-stock inventory alerts, and studio setup breakdowns.
                 </p>
                 <form onSubmit={(e) => e.preventDefault()} className="flex items-center max-w-sm">
                   <input
                     type="email"
                     placeholder="Enter your email address..."
+                    aria-label="Email address for newsletter"
                     className="w-full bg-[#242422] border border-[#3A3A36] text-xs text-white px-3 py-2 rounded-l-md focus:outline-none focus:border-accent"
                   />
                   <button
@@ -144,7 +137,7 @@ export function SiteFooter() {
               </ul>
             </div>
 
-            {/* Column: Tools & Guides */}
+            {/* Column: Tools & Discovery */}
             <div className="space-y-3">
               <h5 className="text-xs font-bold uppercase tracking-wider text-white">
                 Tools & Discovery
@@ -154,22 +147,22 @@ export function SiteFooter() {
                 <li><Link href="/compare" className="hover:text-white transition-colors">Product Spec Comparison</Link></li>
                 <li><Link href="/guides" className="hover:text-white transition-colors">Equipment Buying Guides</Link></li>
                 <li><Link href="/deals" className="hover:text-white transition-colors">Studio Deals & Bundles</Link></li>
-                <li><Link href="/brands" className="hover:text-white transition-colors">Authorized Brand Directory</Link></li>
+                <li><Link href="/brands" className="hover:text-white transition-colors">Brand Directory</Link></li>
               </ul>
             </div>
 
-            {/* Column: Help & Support */}
+            {/* Column: Storefront Policies */}
             <div className="space-y-3">
               <h5 className="text-xs font-bold uppercase tracking-wider text-white">
-                Support & Policy
+                Policies & Support
               </h5>
               <ul className="space-y-2 text-xs text-[#A6A6A2]">
-                <li><span className="text-[#888884]">Official Indian Warranty</span></li>
-                <li><span className="text-[#888884]">GST Invoice for Businesses</span></li>
-                <li><span className="text-[#888884]">Transit Insurance Policy</span></li>
-                <li><span className="text-[#888884]">Easy 7-Day Returns</span></li>
-                <li><span className="text-[#888884]">Service Center Locator</span></li>
-                <li><span className="text-[#888884]">Contact Audio Support</span></li>
+                <li><span className="text-[#888884]">{SITE_POLICIES.warranty.label}</span></li>
+                <li><span className="text-[#888884]">GST Tax Invoices</span></li>
+                <li><span className="text-[#888884]">{SITE_POLICIES.transit.label}</span></li>
+                <li><span className="text-[#888884]">{SITE_POLICIES.returns.label}</span></li>
+                <li><span className="text-[#888884]">Service Center Guidance</span></li>
+                <li><span className="text-[#888884]">Customer Advisory</span></li>
               </ul>
             </div>
           </div>
@@ -181,11 +174,11 @@ export function SiteFooter() {
         <Container size="wide">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <p>
-              &copy; {new Date().getFullYear()} Sound Supply India Private Limited. All brand logos and trademarks are property of their respective manufacturer owners.
+              &copy; {new Date().getFullYear()} {SITE_CONFIG.brand.name} India. All product names, logos, and brands are property of their respective owners.
             </p>
             <div className="flex items-center gap-6">
-              <span>Security Guaranteed 256-bit SSL</span>
-              <span>All Prices Inclusive of GST</span>
+              <span>Standard 256-bit SSL Security</span>
+              <span>Prices Inclusive of Applicable GST</span>
             </div>
           </div>
         </Container>

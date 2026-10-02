@@ -22,10 +22,10 @@ export function HeroSection() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#262624] border border-[#3C3C38] text-xs text-[#E5E5E0]">
               <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
               <span className="font-semibold text-accent tracking-wide uppercase text-[11px]">
-                Authorized Indian Retailer
+                Pro Audio Storefront &bull; India
               </span>
               <span className="text-[#888884]">&bull;</span>
-              <span>Official Warranty & GST Invoices</span>
+              <span>Technical Clarity & Studio Equipment</span>
             </div>
 
             {/* Main Headline */}
@@ -65,15 +65,15 @@ export function HeroSection() {
             <div className="pt-6 border-t border-[#2C2C2A] grid grid-cols-3 gap-4 text-xs text-[#9E9E9A]">
               <div className="flex items-center gap-2">
                 <CheckCircle2 size={15} className="text-accent flex-shrink-0" />
-                <span>Zero-Noise Preamp Test Benches</span>
+                <span>Verified Spec Sheets</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 size={15} className="text-accent flex-shrink-0" />
-                <span>Insured Fragile-Courier Transit</span>
+                <span>Insured Courier Transit</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 size={15} className="text-accent flex-shrink-0" />
-                <span>Verified Brand Distro</span>
+                <span>Flexible EMI Tiers</span>
               </div>
             </div>
           </div>

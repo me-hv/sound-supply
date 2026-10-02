@@ -9,7 +9,8 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { FilterSidebar, FilterValues } from "@/components/filters/FilterSidebar";
 import { Breadcrumbs } from "@/components/navigation/Breadcrumbs";
 import { Container } from "@/components/ui/Container";
-import { ArrowUpDown, SlidersHorizontal, Grid3X3, LayoutList } from "lucide-react";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ArrowUpDown, SlidersHorizontal, Grid3X3, LayoutList, Sliders } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CategoryPageProps {
@@ -259,21 +260,13 @@ export default function CategoryPage({ params }: CategoryPageProps) {
 
             {/* Products Grid */}
             {sortedProducts.length === 0 ? (
-              <div className="bg-white border border-border rounded-lg p-12 text-center space-y-3">
-                <p className="text-text-primary font-bold text-base">
-                  No gear matches your specific filter criteria.
-                </p>
-                <p className="text-xs text-text-secondary max-w-sm mx-auto">
-                  Try clearing some brand filters or expanding your price range to discover equivalent models.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setFilters({ brands: [], priceRange: "all", inStockOnly: false })}
-                  className="inline-block px-4 py-2 text-xs font-bold bg-accent text-white rounded-md hover:bg-accent-hover transition-colors"
-                >
-                  Reset All Filters
-                </button>
-              </div>
+              <EmptyState
+                icon={Sliders}
+                title="No gear matches your specific filter criteria"
+                description="Try clearing some brand filters or expanding your price range to discover equivalent models in this category."
+                actionLabel="Reset All Filters"
+                onActionClick={() => setFilters({ brands: [], priceRange: "all", inStockOnly: false })}
+              />
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {sortedProducts.map((product) => (

@@ -45,8 +45,10 @@ export function CategoryNav() {
                 >
                   <Link
                     href={isDeals ? "/deals" : `/categories/${category.slug}`}
+                    aria-expanded={hasSub ? isMenuOpen : undefined}
+                    aria-haspopup={hasSub ? "true" : undefined}
                     className={cn(
-                      "inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-md transition-colors whitespace-nowrap",
+                      "inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-md transition-colors whitespace-nowrap focus-visible:ring-1 focus-visible:ring-accent",
                       isActive
                         ? "text-accent bg-accent-subtle"
                         : isMenuOpen

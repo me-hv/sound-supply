@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { BRANDS } from "@/data/brands";
-import { ShieldCheck, ArrowRight } from "lucide-react";
+import { ArrowRight, Tag } from "lucide-react";
 
 export function BrandsSection() {
   return (
@@ -11,13 +11,13 @@ export function BrandsSection() {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
           <div>
             <div className="text-xs font-bold uppercase tracking-wider text-accent mb-1 font-mono">
-              Authorized Distribution
+              Manufacturer Index
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-text-primary tracking-tight">
-              Direct Manufacturer Partners
+              Featured Audio Brands
             </h2>
             <p className="text-sm text-text-secondary mt-1">
-              Every unit sourced through direct brand channels with verified serial numbers and official India warranty.
+              Browse world-renowned hardware manufacturers across studio converters, monitoring, synthesizers, and instruments.
             </p>
           </div>
 
@@ -25,7 +25,7 @@ export function BrandsSection() {
             href="/brands"
             className="inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:text-accent-hover transition-colors"
           >
-            <span>View All Authorized Brands</span>
+            <span>View All Brand Catalogs</span>
             <ArrowRight size={14} />
           </Link>
         </div>
@@ -47,8 +47,8 @@ export function BrandsSection() {
 
               {/* Warranty badge */}
               <div className="mt-2 flex items-center gap-1 text-[11px] text-text-muted">
-                <ShieldCheck size={12} className="text-emerald-700" />
-                <span>{brand.warrantyPeriodMonths}M Official Warranty</span>
+                <Tag size={11} className="text-accent" />
+                <span>{brand.name} Gear</span>
               </div>
             </Link>
           ))}

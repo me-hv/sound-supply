@@ -6,6 +6,7 @@ import { useCommerce } from "@/context/CommerceContext";
 import { PRODUCTS } from "@/data/products";
 import { Container } from "@/components/ui/Container";
 import { Breadcrumbs } from "@/components/navigation/Breadcrumbs";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { formatInr } from "@/lib/utils";
 import {
   ShoppingBag,
@@ -65,24 +66,13 @@ export default function CartPage() {
         </div>
 
         {hydratedItems.length === 0 ? (
-          <div className="bg-white border border-border rounded-xl p-12 text-center space-y-4 max-w-lg mx-auto">
-            <div className="w-12 h-12 rounded-full bg-canvas mx-auto flex items-center justify-center text-text-muted">
-              <ShoppingBag size={24} />
-            </div>
-            <h2 className="text-lg font-bold text-text-primary">Your cart is empty</h2>
-            <p className="text-xs text-text-secondary">
-              Discover audio interfaces, studio monitors, dynamic microphones, and keyboards to build your sound.
-            </p>
-            <div>
-              <Link
-                href="/categories/studio-recording"
-                className="inline-flex items-center gap-2 bg-accent hover:bg-accent-hover text-white text-xs font-bold px-5 py-2.5 rounded-md transition-colors"
-              >
-                <span>Browse Studio Recording</span>
-                <ArrowRight size={14} />
-              </Link>
-            </div>
-          </div>
+          <EmptyState
+            icon={ShoppingBag}
+            title="Your studio cart is currently empty"
+            description="Explore professional recording interfaces, reference monitors, microphones, and studio keyboards to begin building your sound."
+            actionLabel="Discover Studio Gear"
+            actionHref="/categories/studio-recording"
+          />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Left Items List (lg:col-span-8) */}
