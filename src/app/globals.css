@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #F7F7F5;
+  --surface: #FFFFFF;
+  --surface-muted: #F0F0EE;
+  --border: #DDDDDD;
+  --border-subtle: #E5E5E2;
+  --text-primary: #171717;
+  --text-secondary: #666666;
+  --accent: #D9381E;
+  --accent-hover: #C22F17;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text-primary);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbars for high-density audio spec tables and filter drawers */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F0F0EE;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C8C8C4;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9A9A96;
+}
+
+/* Tabular numbers for price and technical specs */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Subtle focus ring style */
+:focus-visible {
+  outline: 2px solid #D9381E;
+  outline-offset: 1px;
+}
