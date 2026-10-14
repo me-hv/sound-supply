@@ -116,6 +116,8 @@ export interface ProductVariant {
   };
   mrpInr: number;
   sellingPriceInr: number;
+  mrpInrPaise?: number; // Integer paise (mrpInr * 100)
+  priceInrPaise?: number; // Integer paise (sellingPriceInr * 100)
   stockStatus: "in-stock" | "low-stock" | "pre-order" | "out-of-stock";
   stockCount: number;
   images: string[];
@@ -160,6 +162,7 @@ export interface Product {
   warrantySummary: string;
   fastestDeliveryDays: number;
   emiStartingInr: number;
+  isDemo?: boolean;
 }
 
 export interface FilterState {

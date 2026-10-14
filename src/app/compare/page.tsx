@@ -18,7 +18,7 @@ export default function ComparePage() {
   const activeIds =
     compareIds.length > 0
       ? compareIds
-      : ["prod-yamaha-hs5", "prod-krk-rokit5-g4"];
+      : ["prod-yamaha-hs5", "prod-krk-rokit-5-g4"];
 
   const products = activeIds
     .map((id) => PRODUCTS.find((p) => p.id === id))
@@ -92,7 +92,7 @@ export default function ComparePage() {
             <button
               onClick={() => {
                 addToCompare("prod-scarlett-2i2-gen4");
-                addToCompare("prod-universal-audio-apollo-twin-x");
+                addToCompare("prod-apollo-twin-x-duo");
               }}
               className="font-bold underline ml-2 hover:text-amber-950"
             >

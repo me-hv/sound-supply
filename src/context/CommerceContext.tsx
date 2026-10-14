@@ -1,8 +1,10 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { cartService, CartSummary, ValidatedCartItem } from "@/services/cartService";
+import { wishlistService } from "@/services/wishlistService";
 
-interface CartItem {
+export interface CartItem {
   productId: string;
   variantId: string;
   quantity: number;
@@ -22,9 +24,13 @@ interface CommerceContextType {
   isInWishlist: (productId: string) => boolean;
 
   cartItems: CartItem[];
+  cartSummary: CartSummary | null;
+  validatedCartItems: ValidatedCartItem[];
   addToCart: (productId: string, variantId?: string, quantity?: number) => void;
   removeFromCart: (variantId: string) => void;
+  updateCartQuantity: (variantId: string, quantity: number) => void;
   cartCount: number;
+  sessionToken: string;
 }
 
 const CommerceContext = createContext<CommerceContextType | undefined>(undefined);
@@ -34,10 +40,19 @@ export function CommerceProvider({ children }: { children: React.ReactNode }) {
   const [isCompareDrawerOpen, setCompareDrawerOpen] = useState(false);
   const [wishlistIds, setWishlistIds] = useState<string[]>([]);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartSummary, setCartSummary] = useState<CartSummary | null>(null);
+  const [sessionToken, setSessionToken] = useState<string>("");
 
-  // Load from localStorage if available (client-side only)
+  // Initialize guest session and load state from storage/services
   useEffect(() => {
     try {
+      let token = localStorage.getItem("soundsupply_session_token");
+      if (!token) {
+        token = "sess_" + Math.random().toString(36).substring(2) + Date.now().toString(36);
+        localStorage.setItem("soundsupply_session_token", token);
+      }
+      setSessionToken(token);
+
       const savedCompare = localStorage.getItem("soundsupply_compare");
       if (savedCompare) setCompareIds(JSON.parse(savedCompare));
 
@@ -45,9 +60,39 @@ export function CommerceProvider({ children }: { children: React.ReactNode }) {
       if (savedWishlist) setWishlistIds(JSON.parse(savedWishlist));
 
       const savedCart = localStorage.getItem("soundsupply_cart");
-      if (savedCart) setCartItems(JSON.parse(savedCart));
+      if (savedCart) {
+        const parsed: CartItem[] = JSON.parse(savedCart);
+        setCartItems(parsed);
+        // Sync items into cartService
+        Promise.all(
+          parsed.map((item) =>
+            cartService.addToCart(token, item.productId, item.variantId, item.quantity)
+          )
+        ).then(() => {
+          cartService.getCart(token).then(setCartSummary);
+        });
+      } else {
+        cartService.getCart(token).then(setCartSummary);
+      }
     } catch {
-      // Ignore storage errors
+      // Ignore storage errors on client initialization
+    }
+  }, []);
+
+  const refreshCart = useCallback(async (token: string) => {
+    if (!token) return;
+    try {
+      const summary = await cartService.getCart(token);
+      setCartSummary(summary);
+      const simpleItems = summary.items.map((i) => ({
+        productId: i.productId,
+        variantId: i.variantId,
+        quantity: i.quantity,
+      }));
+      setCartItems(simpleItems);
+      localStorage.setItem("soundsupply_cart", JSON.stringify(simpleItems));
+    } catch (err) {
+      console.error("Failed to refresh cart:", err);
     }
   }, []);
 
@@ -87,7 +132,7 @@ export function CommerceProvider({ children }: { children: React.ReactNode }) {
 
   const isInCompare = (productId: string) => compareIds.includes(productId);
 
-  const toggleWishlist = (productId: string) => {
+  const toggleWishlist = async (productId: string) => {
     let updated: string[];
     if (wishlistIds.includes(productId)) {
       updated = wishlistIds.filter((id) => id !== productId);
@@ -97,41 +142,66 @@ export function CommerceProvider({ children }: { children: React.ReactNode }) {
     setWishlistIds(updated);
     try {
       localStorage.setItem("soundsupply_wishlist", JSON.stringify(updated));
+      if (sessionToken) {
+        await wishlistService.toggleWishlist(sessionToken, productId);
+      }
     } catch {}
   };
 
   const isInWishlist = (productId: string) => wishlistIds.includes(productId);
 
-  const addToCart = (productId: string, variantId?: string, quantity: number = 1) => {
-    setCartItems((prev) => {
-      const vId = variantId || productId;
-      const existing = prev.find((item) => item.variantId === vId);
-      let updated: CartItem[];
-      if (existing) {
-        updated = prev.map((item) =>
-          item.variantId === vId ? { ...item, quantity: item.quantity + quantity } : item
-        );
-      } else {
-        updated = [...prev, { productId, variantId: vId, quantity }];
-      }
-      try {
-        localStorage.setItem("soundsupply_cart", JSON.stringify(updated));
-      } catch {}
-      return updated;
-    });
+  const addToCart = async (productId: string, variantId?: string, quantity: number = 1) => {
+    const activeToken = sessionToken || "guest_default";
+    try {
+      const summary = await cartService.addToCart(activeToken, productId, variantId, quantity);
+      setCartSummary(summary);
+      const simpleItems = summary.items.map((i) => ({
+        productId: i.productId,
+        variantId: i.variantId,
+        quantity: i.quantity,
+      }));
+      setCartItems(simpleItems);
+      localStorage.setItem("soundsupply_cart", JSON.stringify(simpleItems));
+    } catch (err) {
+      console.error("Add to cart error:", err);
+    }
   };
 
-  const removeFromCart = (variantId: string) => {
-    setCartItems((prev) => {
-      const updated = prev.filter((item) => item.variantId !== variantId);
-      try {
-        localStorage.setItem("soundsupply_cart", JSON.stringify(updated));
-      } catch {}
-      return updated;
-    });
+  const updateCartQuantity = async (variantId: string, quantity: number) => {
+    const activeToken = sessionToken || "guest_default";
+    try {
+      const summary = await cartService.updateQuantity(activeToken, variantId, quantity);
+      setCartSummary(summary);
+      const simpleItems = summary.items.map((i) => ({
+        productId: i.productId,
+        variantId: i.variantId,
+        quantity: i.quantity,
+      }));
+      setCartItems(simpleItems);
+      localStorage.setItem("soundsupply_cart", JSON.stringify(simpleItems));
+    } catch (err) {
+      console.error("Update quantity error:", err);
+    }
   };
 
-  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  const removeFromCart = async (variantId: string) => {
+    const activeToken = sessionToken || "guest_default";
+    try {
+      const summary = await cartService.removeFromCart(activeToken, variantId);
+      setCartSummary(summary);
+      const simpleItems = summary.items.map((i) => ({
+        productId: i.productId,
+        variantId: i.variantId,
+        quantity: i.quantity,
+      }));
+      setCartItems(simpleItems);
+      localStorage.setItem("soundsupply_cart", JSON.stringify(simpleItems));
+    } catch (err) {
+      console.error("Remove from cart error:", err);
+    }
+  };
+
+  const cartCount = cartSummary ? cartSummary.itemCount : cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
     <CommerceContext.Provider
@@ -147,9 +217,13 @@ export function CommerceProvider({ children }: { children: React.ReactNode }) {
         toggleWishlist,
         isInWishlist,
         cartItems,
+        cartSummary,
+        validatedCartItems: cartSummary ? cartSummary.items : [],
         addToCart,
         removeFromCart,
+        updateCartQuantity,
         cartCount,
+        sessionToken,
       }}
     >
       {children}

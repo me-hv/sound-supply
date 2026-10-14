@@ -3,11 +3,10 @@
 import React from "react";
 import Link from "next/link";
 import { useCommerce } from "@/context/CommerceContext";
-import { PRODUCTS } from "@/data/products";
 import { Container } from "@/components/ui/Container";
 import { Breadcrumbs } from "@/components/navigation/Breadcrumbs";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { formatInr } from "@/lib/utils";
+import { formatInr } from "@/lib/currency";
 import {
   ShoppingBag,
   Trash2,
@@ -16,29 +15,17 @@ import {
   ArrowRight,
   ArrowLeft,
   CreditCard,
+  Plus,
+  Minus,
 } from "lucide-react";
 import { SITE_POLICIES } from "@/config/siteConfig";
 
 export default function CartPage() {
-  const { cartItems, removeFromCart, cartCount } = useCommerce();
+  const { validatedCartItems, cartSummary, removeFromCart, updateCartQuantity, cartCount } = useCommerce();
 
-  // Hydrate cart item details
-  const hydratedItems = cartItems
-    .map((item) => {
-      const product = PRODUCTS.find((p) => p.id === item.productId);
-      if (!product) return null;
-      const variant =
-        product.variants.find((v) => v.id === item.variantId) || product.variants[0];
-      return {
-        ...item,
-        product,
-        variant,
-        subtotal: variant.sellingPriceInr * item.quantity,
-      };
-    })
-    .filter(Boolean) as any[];
-
-  const cartSubtotal = hydratedItems.reduce((acc, item) => acc + item.subtotal, 0);
+  const subtotalPaise = cartSummary?.subtotalPaise || 0;
+  const shippingPaise = cartSummary?.estimatedShippingPaise || 0;
+  const totalPaise = cartSummary?.totalPaise || 0;
 
   return (
     <div className="py-8 bg-canvas min-h-screen">
@@ -59,14 +46,14 @@ export default function CartPage() {
 
           <Link
             href="/categories/studio-recording"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-text-secondary hover:text-accent"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-text-secondary hover:text-accent transition-colors"
           >
             <ArrowLeft size={14} />
             <span>Continue Shopping</span>
           </Link>
         </div>
 
-        {hydratedItems.length === 0 ? (
+        {validatedCartItems.length === 0 ? (
           <EmptyState
             icon={ShoppingBag}
             title="Your studio cart is currently empty"
@@ -79,50 +66,73 @@ export default function CartPage() {
             {/* Left Items List (lg:col-span-8) */}
             <div className="lg:col-span-8 bg-white border border-border rounded-xl divide-y divide-border-subtle shadow-subtle overflow-hidden">
               <div className="p-4 bg-canvas text-xs font-bold uppercase tracking-wider text-text-muted flex justify-between">
-                <span>Hardware Unit</span>
+                <span>Hardware Unit & Configuration</span>
                 <span>Subtotal</span>
               </div>
 
-              {hydratedItems.map((item) => (
+              {validatedCartItems.map((item) => (
                 <div key={item.variantId} className="p-4 sm:p-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-16 h-16 bg-canvas rounded-lg border border-border-subtle p-1 flex-shrink-0">
                       <img
-                        src={item.variant.images[0]}
-                        alt={item.product.title}
+                        src={item.image}
+                        alt={item.productTitle}
                         className="w-full h-full object-contain"
                       />
                     </div>
                     <div>
                       <div className="text-[10px] uppercase font-bold text-accent font-mono">
-                        {item.product.brand.name}
+                        {item.brandName}
                       </div>
                       <Link
-                        href={`/products/${item.product.slug}`}
+                        href={`/products/${item.productSlug}`}
                         className="font-bold text-sm text-text-primary hover:text-accent transition-colors block"
                       >
-                        {item.product.title}
+                        {item.productTitle}
                       </Link>
                       <div className="text-xs text-text-muted mt-0.5">
-                        Config: {item.variant.title} &bull; Qty: {item.quantity}
+                        Config: {item.variantTitle} &bull; SKU: <span className="font-mono text-[11px]">{item.sku}</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-border-subtle">
-                    <div className="text-right">
+                    {/* Quantity Selector */}
+                    <div className="flex items-center border border-border rounded-lg bg-surface">
+                      <button
+                        type="button"
+                        onClick={() => updateCartQuantity(item.variantId, item.quantity - 1)}
+                        className="p-1.5 text-text-muted hover:text-text-primary transition-colors"
+                        title="Decrease quantity"
+                      >
+                        <Minus size={13} />
+                      </button>
+                      <span className="w-8 text-center text-xs font-mono font-bold text-text-primary">
+                        {item.quantity}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => updateCartQuantity(item.variantId, item.quantity + 1)}
+                        className="p-1.5 text-text-muted hover:text-text-primary transition-colors"
+                        title="Increase quantity"
+                      >
+                        <Plus size={13} />
+                      </button>
+                    </div>
+
+                    <div className="text-right min-w-[90px]">
                       <div className="text-sm font-bold font-mono text-text-primary">
-                        {formatInr(item.subtotal)}
+                        {formatInr(item.totalPricePaise, { isPaise: true })}
                       </div>
                       <div className="text-[11px] text-text-muted font-mono">
-                        {formatInr(item.variant.sellingPriceInr)} each
+                        {formatInr(item.unitPricePaise, { isPaise: true })} each
                       </div>
                     </div>
 
                     <button
                       type="button"
                       onClick={() => removeFromCart(item.variantId)}
-                      className="text-text-muted hover:text-accent p-1.5 rounded"
+                      className="text-text-muted hover:text-accent p-1.5 rounded transition-colors"
                       title="Remove item"
                     >
                       <Trash2 size={16} />
@@ -141,11 +151,15 @@ export default function CartPage() {
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between text-text-secondary">
                   <span>Hardware Subtotal:</span>
-                  <span className="font-mono font-bold text-text-primary">{formatInr(cartSubtotal)}</span>
+                  <span className="font-mono font-bold text-text-primary">
+                    {formatInr(subtotalPaise, { isPaise: true })}
+                  </span>
                 </div>
                 <div className="flex justify-between text-text-secondary">
                   <span>Insured Express Shipping:</span>
-                  <span className="text-emerald-700 font-bold">FREE (India Wide)</span>
+                  <span className="text-emerald-700 font-bold">
+                    {shippingPaise === 0 ? "FREE (India Wide)" : formatInr(shippingPaise, { isPaise: true })}
+                  </span>
                 </div>
                 <div className="flex justify-between text-text-secondary">
                   <span>Applicable GST (18%):</span>
@@ -156,7 +170,7 @@ export default function CartPage() {
               <div className="pt-3 border-t border-border-subtle flex justify-between items-baseline">
                 <span className="font-bold text-sm text-text-primary">Estimated Total:</span>
                 <span className="font-extrabold text-2xl font-mono text-text-primary">
-                  {formatInr(cartSubtotal)}
+                  {formatInr(totalPaise, { isPaise: true })}
                 </span>
               </div>
 
